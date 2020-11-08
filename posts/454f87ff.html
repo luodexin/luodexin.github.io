@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>高并发下Redis缓存问题：缓存击穿，缓存穿透，缓存雪崩 | LUO DEXIN Blog</title>
+  <meta name="description" content="系统中使用Redis缓存技术能够极大的提升了应用程序的性能和效率，特别是数据查询方面。那么使用Redis做缓存，系统就能保证系统的性能以及高可用吗？答案是否定的，在使用Redis做缓存的系统中仍然存在缓存击穿、缓存穿透、缓存雪崩等经典问题。目前，这几个经典问题在业界也都有比较流行的解决方案。 1. 缓存击穿问题1.1 问题描述缓存击穿，是指一个key非常热点，在不停的扛着大并发，大并发集中对这一个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高并发下Redis缓存问题：缓存击穿，缓存穿透，缓存雪崩">
+<meta property="og:url" content="http://example.com/posts/454f87ff.html">
+<meta property="og:site_name" content="DexBlog">
+<meta property="og:description" content="系统中使用Redis缓存技术能够极大的提升了应用程序的性能和效率，特别是数据查询方面。那么使用Redis做缓存，系统就能保证系统的性能以及高可用吗？答案是否定的，在使用Redis做缓存的系统中仍然存在缓存击穿、缓存穿透、缓存雪崩等经典问题。目前，这几个经典问题在业界也都有比较流行的解决方案。 1. 缓存击穿问题1.1 问题描述缓存击穿，是指一个key非常热点，在不停的扛着大并发，大并发集中对这一个">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/05.%E9%AB%98%E5%B9%B6%E5%8F%91%E4%B8%8BRedis%E7%BC%93%E5%AD%98%E9%97%AE%E9%A2%98-2020-11-07-13-15-58.png">
+<meta property="article:published_time" content="2018-10-11T06:18:53.000Z">
+<meta property="article:modified_time" content="2020-11-07T11:38:57.235Z">
+<meta property="article:author" content="Dexin Luo">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/05.%E9%AB%98%E5%B9%B6%E5%8F%91%E4%B8%8BRedis%E7%BC%93%E5%AD%98%E9%97%AE%E9%A2%98-2020-11-07-13-15-58.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/posts/454f87ff.html">
+  
+    <link rel="alternate" href="/atom.xml" title="DexBlog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/luodexin" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Dexin L.</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Software Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Shenzhen, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/luodexin" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Concurrent/">Java - Concurrent</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Foundation/">Java - Foundation</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-JVM/">Java - JVM</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-NIO/">Java - NIO</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">Linux - 常用命令</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ-Kafka/">MQ - Kafka</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">Redis - 常见问题</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-SpringCloud/">Spring - SpringCloud</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a><span class="category-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AOP/" rel="tag">AOP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MQ/" rel="tag">MQ</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NIO/" rel="tag">NIO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Zuul/" rel="tag">Zuul</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag">多线程</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%97%A5%E5%BF%97/" rel="tag">日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag">面试</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">8</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/MQ-Kafka/">MQ - Kafka</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/fe06768f.html" class="title">Kafka常见面试题</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-11-01T15:47:21.000Z" itemprop="datePublished">2020-11-01</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringCloud/">Spring - SpringCloud</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/aca7477a.html" class="title">Spring Cloud 微服务网关--Zuul</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-06-07T12:17:59.000Z" itemprop="datePublished">2019-06-07</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/b19a926a.html" class="title">Spring AOP 编程</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-03-18T06:12:59.000Z" itemprop="datePublished">2019-03-18</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/73f5d5a4.html" class="title">Spring IoC 容器初始化流程</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-02-08T06:12:59.000Z" itemprop="datePublished">2019-02-08</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/89080a8e.html" class="title">Spring Bean的生命周期</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-02-08T06:12:59.000Z" itemprop="datePublished">2019-02-08</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%E9%97%AE%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">1. 缓存击穿问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 问题描述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E4%B8%80-%E4%BD%BF%E7%94%A8synchronized-%E5%8F%8C%E6%A3%80%E6%9F%A5%E6%9C%BA%E5%88%B6"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 解决方案一: 使用synchronized+双检查机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E4%BA%8C-%E4%BD%BF%E7%94%A8%E4%BA%92%E6%96%A5%E9%94%81-mutex-key"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 解决方案二: 使用互斥锁(mutex key)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%E9%97%AE%E9%A2%98"><span class="toc-number">2.</span> <span class="toc-text">2. 缓存穿透问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 问题描述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E4%B8%80-%E7%BC%93%E5%AD%98%E5%B1%82%E7%BC%93%E5%AD%98%E7%A9%BA%E5%80%BC"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 解决方案一: 缓存层缓存空值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E4%BA%8C-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 解决方案二: 布隆过滤器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-number">2.3.1.</span> <span class="toc-text">2.3.1 什么是布隆过滤器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-2-%E4%BD%BF%E7%94%A8%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8%E5%A4%84%E7%90%86%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F"><span class="toc-number">2.3.2.</span> <span class="toc-text">2.3.2 使用布隆过滤器处理缓存穿透</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-3-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8%E7%9A%84%E5%85%B6%E5%AE%83%E5%BA%94%E7%94%A8"><span class="toc-number">2.3.3.</span> <span class="toc-text">2.3.3 布隆过滤器的其它应用</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%E9%97%AE%E9%A2%98"><span class="toc-number">3.</span> <span class="toc-text">3. 缓存雪崩问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 缓存雪崩问题描述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%E9%81%BF%E5%85%8D%E6%96%B9%E6%A1%88%E4%B8%80-%E8%AF%B7%E6%B1%82%E5%8A%A0%E9%94%81%E6%8E%92%E9%98%9F"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 缓存雪崩避免方案一: 请求加锁排队</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%E9%81%BF%E5%85%8D%E6%96%B9%E6%A1%88%E4%B8%80-%E8%AE%BE%E7%BD%AE%E4%B8%8D%E5%90%8C%E7%9A%84%E8%BF%87%E6%9C%9F%E6%97%B6%E9%97%B4"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 缓存雪崩避免方案一: 设置不同的过期时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%E9%81%BF%E5%85%8D%E6%96%B9%E6%A1%88%E4%B8%89-%E7%BC%93%E5%AD%98%E8%BF%87%E6%9C%9F%E6%A0%87%E8%AE%B0-%E5%BC%82%E6%AD%A5%E5%88%B7%E6%96%B0"><span class="toc-number">3.4.</span> <span class="toc-text">3.3 缓存雪崩避免方案三: 缓存过期标记+异步刷新</span></a></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-redis/05.高并发下Redis缓存问题" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      高并发下Redis缓存问题：缓存击穿，缓存穿透，缓存雪崩
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/posts/454f87ff.html" class="article-date">
+	  <time datetime="2018-10-11T06:18:53.000Z" itemprop="datePublished">2018-10-11</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/Redis-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">Redis - 常见问题</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Redis/" rel="tag">Redis</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/454f87ff.html#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <p>系统中使用Redis缓存技术能够极大的提升了应用程序的性能和效率，特别是数据查询方面。那么使用Redis做缓存，系统就能保证系统的性能以及高可用吗？答案是否定的，在使用Redis做缓存的系统中仍然存在缓存击穿、缓存穿透、缓存雪崩等经典问题。目前，这几个经典问题在业界也都有比较流行的解决方案。</p>
+<h2 id="1-缓存击穿问题"><a href="#1-缓存击穿问题" class="headerlink" title="1. 缓存击穿问题"></a>1. 缓存击穿问题</h2><h3 id="1-1-问题描述"><a href="#1-1-问题描述" class="headerlink" title="1.1 问题描述"></a>1.1 问题描述</h3><p>缓存击穿，是指一个key<strong>非常热点</strong>，在不停的扛着大并发，大并发集中对这一个点进行访问，当这个key在失效的瞬间，持续的大并发就穿破缓存，直接请求数据库，就像在一个屏障上凿开了一个洞。</p>
+<h3 id="1-2-解决方案一-使用synchronized-双检查机制"><a href="#1-2-解决方案一-使用synchronized-双检查机制" class="headerlink" title="1.2 解决方案一: 使用synchronized+双检查机制"></a>1.2 解决方案一: 使用synchronized+双检查机制</h3><p>此方案适合单机模式的系统，原理类似于单例模式中的懒汉式。代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">get</span><span class="params">(String key)</span></span>&#123;</span><br><span class="line">    String value = redis.get(key);</span><br><span class="line">    <span class="keyword">if</span>(value == <span class="keyword">null</span>)&#123;</span><br><span class="line">        <span class="comment">//采用synchronized保证一次只有一个请求进入到这个代码块</span></span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>)&#123;</span><br><span class="line">            <span class="comment">// 再次检查确保一个线程设置了缓存后其他线程不用在查数据库</span></span><br><span class="line">            value = redis.get(key);</span><br><span class="line">            <span class="keyword">if</span>(<span class="keyword">null</span> == value)&#123;</span><br><span class="line">                value = getValueBySql(key);</span><br><span class="line">                redis.set(key, value, <span class="number">1000</span>, TimeUnit.SECONDS);</span><br><span class="line">                <span class="keyword">return</span> value;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> value;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> value;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="1-3-解决方案二-使用互斥锁-mutex-key"><a href="#1-3-解决方案二-使用互斥锁-mutex-key" class="headerlink" title="1.3 解决方案二: 使用互斥锁(mutex key)"></a>1.3 解决方案二: 使用互斥锁(mutex key)</h3><p>业界比较常用的做法就是使用互斥锁。简单地来说，就是在缓存失效的时候（判断拿出来的值为空），不是立即去load db，而是先使用缓存工具的某些带成功操作返回值的操作（比如Redis的<strong>SETNX</strong>或者Memcache的<strong>ADD</strong>）去set一个mutex key，当操作返回成功时，再进行load db的操作并回设缓存；否则，就重试整个get缓存的方法。</p>
+<p>在使用Redis缓存场景中使用互斥锁:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">get</span><span class="params">(key)</span> </span>&#123;</span><br><span class="line">    String value = redis.get(key);</span><br><span class="line">    <span class="keyword">if</span> (value == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">//查询缓存为空，代表缓存值过期</span></span><br><span class="line">        <span class="comment">//设置3min的超时，防止del操作失败的时候，下次缓存过期一直不能load db</span></span><br><span class="line">        <span class="keyword">if</span> (redis.setnx(key_mutex, <span class="number">1</span>, <span class="number">3</span> * <span class="number">60</span>) == <span class="number">1</span>) &#123;  <span class="comment">//代表设置成功</span></span><br><span class="line">            value = db.get(key);</span><br><span class="line">            redis.set(key, value, expire_secs);</span><br><span class="line">            redis.del(key_mutex);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;  </span><br><span class="line">            <span class="comment">// 设置失败，代表其他线程获得了锁，其他线程在查询数据库，此时只需要等待一段时间后重试</span></span><br><span class="line">            sleep(<span class="number">50</span>);</span><br><span class="line">            get(key);  <span class="comment">// 重试</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> value;      </span><br><span class="line">    &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-缓存穿透问题"><a href="#2-缓存穿透问题" class="headerlink" title="2. 缓存穿透问题"></a>2. 缓存穿透问题</h2><h3 id="2-1-问题描述"><a href="#2-1-问题描述" class="headerlink" title="2.1 问题描述"></a>2.1 问题描述</h3><p>缓存穿透是指查询一个一定不存在的数据（比如查询ID为-1的用户），由于缓存是不命中时被动写的，并且出于容错考虑，如果从存储层查不到数据则不写入缓存，这将导致这个不存在的数据每次请求都要到存储层去查询，失去了缓存的意义。在流量大时，可能DB就挂掉了，要是有人利用不存在的key频繁攻击我们的应用，这就是漏洞。</p>
+<h3 id="2-2-解决方案一-缓存层缓存空值"><a href="#2-2-解决方案一-缓存层缓存空值" class="headerlink" title="2.2 解决方案一: 缓存层缓存空值"></a>2.2 解决方案一: 缓存层缓存空值</h3><p>将数据库中的空值也缓存到缓存层中，这样查询该空值就不会再访问DB，而是直接在缓存层访问就行。</p>
+<p>但是这样有个弊端就是<strong>缓存太多空值占用了更多的空间</strong>，可以通过给缓存层空值设立一个较短的过期时间来解决，例如60s。</p>
+<h3 id="2-3-解决方案二-布隆过滤器"><a href="#2-3-解决方案二-布隆过滤器" class="headerlink" title="2.3 解决方案二: 布隆过滤器"></a>2.3 解决方案二: 布隆过滤器</h3><h4 id="2-3-1-什么是布隆过滤器"><a href="#2-3-1-什么是布隆过滤器" class="headerlink" title="2.3.1 什么是布隆过滤器"></a>2.3.1 什么是布隆过滤器</h4><p>每个布隆过滤器对应到 Redis 的数据结构里面就是一个<strong>大型的位数组</strong>和几个不一样的<strong>无偏 hash 函数</strong>。所谓无偏就是能够把元素的 hash 值算得比较均匀。</p>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/05.%E9%AB%98%E5%B9%B6%E5%8F%91%E4%B8%8BRedis%E7%BC%93%E5%AD%98%E9%97%AE%E9%A2%98-2020-11-07-13-15-58.png" alt="05.高并发下Redis缓存问题-2020-11-07-13-15-58"></p>
+<p>向布隆过滤器中添加 key 时，会使用多个 hash 函数对 key 进行 hash 算得一个整数索引值然后对位数组长度进行取模运算得到一个位置，每个 hash 函数都会算得一个不同的位置。再把位数组的这几个位置都置为 1 就完成了 add 操作。</p>
+<p>向布隆过滤器询问 key 是否存在时，跟 add 一样，也会把 hash 的几个位置都算出来，看看位数组中这几个位置是否都为 1。只要有一个位为 0，那么说明布隆过滤器中这个 key 不存在。如果都是 1，这并不能说明这个 key 就一定存在，只是极有可能存在，因为这些位被置为 1 可能是因为其它的 key 存在所致。</p>
+<p>布隆过滤器可能会误判，如果它说不存在那肯定不存在，如果它说存在，那数据有可能实际不存在；Redis的bitmap只支持2^32大小，对应到内存也就是512MB，误判率万分之一，可以放下2亿左右的数据，性能高，空间占用率及小，省去了大量无效的数据库连接。</p>
+<p>如果这个位数组比较稀疏，判断正确的概率就会很大，如果这个位数组比较拥挤，判断正确的概率就会降低。</p>
+<p>Redis中布隆过滤器有二个基本指令，<code>bf.add</code> 添加元素，<code>bf.exists</code> 查询元素是否存在，它的用法和 set 集合的 <code>sadd</code> 和 <code>sismember</code> 差不多。注意 <code>bf.add</code> 只能一次添加一个元素，如果想要一次添加多个，就需要用到 <code>bf.madd</code> 指令。同样如果需要一次查询多个元素是否存在，就需要用到 <code>bf.mexists</code> 指令。</p>
+<h4 id="2-3-2-使用布隆过滤器处理缓存穿透"><a href="#2-3-2-使用布隆过滤器处理缓存穿透" class="headerlink" title="2.3.2 使用布隆过滤器处理缓存穿透"></a>2.3.2 使用布隆过滤器处理缓存穿透</h4><p>将<strong>数据库中所有的查询条件，放入布隆过滤器中</strong>，当一个查询请求过来时，先经过布隆过滤器进行查，如果判断请求查询不存在(一定不存在)，直接丢弃。如果判断请求查询值存在(可能不存在)，则继续查。</p>
+<h4 id="2-3-3-布隆过滤器的其它应用"><a href="#2-3-3-布隆过滤器的其它应用" class="headerlink" title="2.3.3 布隆过滤器的其它应用"></a>2.3.3 布隆过滤器的其它应用</h4><ul>
+<li>推送系统去重<br>如果历史记录存储在关系数据库里，去重就需要频繁地对数据库进行 <code>exists</code> 查询，当系统并发量很高时，数据库是很难扛住压力的。如果使用缓存把所有历史记录都放入缓存里，占用空间太大明显不现实。使用布隆过滤器能准确过滤掉那些已经看过的内容（将已经看过的记录在布隆过滤器中），那些没有看过的新内容，它也会过滤掉极小一部分 (误判)，但是绝大多数新内容它都能准确识别。这样就可以完全保证推荐给用户的内容都是无重复的。</li>
+<li>爬虫去重<br>在爬虫系统中，我们需要对 URL 进行去重，已经爬过的网页就可以不用爬了。但是 URL 太多了，几千万几个亿，如果用一个集合装下这些 URL 地址那是非常浪费空间的。这时候就可以考虑使用布隆过滤器。它可以大幅降低去重存储消耗，只不过也会使得爬虫系统错过少量的页面。</li>
+</ul>
+<h2 id="3-缓存雪崩问题"><a href="#3-缓存雪崩问题" class="headerlink" title="3. 缓存雪崩问题"></a>3. 缓存雪崩问题</h2><h3 id="3-1-缓存雪崩问题描述"><a href="#3-1-缓存雪崩问题描述" class="headerlink" title="3.1 缓存雪崩问题描述"></a>3.1 缓存雪崩问题描述</h3><p>缓存雪崩是由于服务器重启、过期时间设置问题等原因导致缓存大面积失效，进而导致大量的请求直接查询数据库。与缓存击穿的区别在于这里针对很多key缓存，前者则是某一个key。</p>
+<p>缓存失效时的雪崩效应对底层系统的冲击非常可怕！大多数系统设计者考虑用<strong>加锁或者队列</strong>的方式保证来保证不会有大量的线程对数据库一次性进行读写，从而避免失效时大量的并发请求落到底层存储系统上。还有一个简单方案就时讲缓存失效时间分散开，比如我们可以在原有的<strong>失效时间基础上增加一个随机值</strong>，比如1-5分钟随机，这样每一个缓存的过期时间的重复率就会降低，就很难引发集体失效的事件。</p>
+<h3 id="3-2-缓存雪崩避免方案一-请求加锁排队"><a href="#3-2-缓存雪崩避免方案一-请求加锁排队" class="headerlink" title="3.2 缓存雪崩避免方案一: 请求加锁排队"></a>3.2 缓存雪崩避免方案一: 请求加锁排队</h3><p>类似于加锁处理缓存穿透，队伪代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> object <span class="title">GetProductListNew</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> cacheTime = <span class="number">30</span>;</span><br><span class="line">    String cacheKey = <span class="string">&quot;product_list&quot;</span>;</span><br><span class="line">    String lockKey = cacheKey;</span><br><span class="line"></span><br><span class="line">    String cacheValue = CacheHelper.get(cacheKey);</span><br><span class="line">    <span class="keyword">if</span> (cacheValue != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> cacheValue;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">synchronized</span>(lockKey) &#123;</span><br><span class="line">            cacheValue = CacheHelper.get(cacheKey);</span><br><span class="line">            <span class="keyword">if</span> (cacheValue != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> cacheValue;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">//这里一般是sql查询数据</span></span><br><span class="line">                cacheValue = GetProductListFromDB(); </span><br><span class="line">                CacheHelper.Add(cacheKey, cacheValue, cacheTime);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cacheValue;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>加锁排队只是为了减轻数据库的压力，并没有提高系统吞吐量。假设在高并发下，缓存重建期间key是锁着的，这是过来1000个请求999个都在阻塞的。同样会导致用户等待超时，这是个治标不治本的方法！</p>
+<h3 id="3-3-缓存雪崩避免方案一-设置不同的过期时间"><a href="#3-3-缓存雪崩避免方案一-设置不同的过期时间" class="headerlink" title="3.3 缓存雪崩避免方案一: 设置不同的过期时间"></a>3.3 缓存雪崩避免方案一: 设置不同的过期时间</h3><p>可以对缓存同时大面积的过期，可以为过期时间做一个均匀分布的处理。比如1-5分钟内，随机分布。</p>
+<h3 id="3-3-缓存雪崩避免方案三-缓存过期标记-异步刷新"><a href="#3-3-缓存雪崩避免方案三-缓存过期标记-异步刷新" class="headerlink" title="3.3 缓存雪崩避免方案三: 缓存过期标记+异步刷新"></a>3.3 缓存雪崩避免方案三: 缓存过期标记+异步刷新</h3><p>方案一种使用加锁排队的方法对缓存过期是零容忍的，虽然能够减轻DB压力，防止雪崩。但由于用到了加锁排队，吞吐率是不高的。在高并发场景下可以把条件稍微放宽点：在缓存过期时间后，允许短时间内部分读请求返回旧值，以此兼顾吞吐率。</p>
+<p>兼顾吞吐率的方案: 过期时间T到达后，缓存中的key和value不会被清掉，而只是被标记为过期（逻辑上过期，物理上不过期），然后程序异步去刷新缓存。而后续部分读线程在前面的线程刷新cache成功之前，暂时获取缓存中旧的value返回。一旦缓存刷新成功，后续所有线程就能直接获取缓存中新的value。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">getCacheValue</span><span class="params">(String key, <span class="keyword">int</span> expiredTime)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> String signKey = <span class="string">&quot;sign:&quot;</span> + key;   <span class="comment">// 缓存标记的key</span></span><br><span class="line">    Object cacheValue = cache.get(key);</span><br><span class="line">    <span class="keyword">if</span> (!isExpired(signKey, <span class="keyword">false</span>)) &#123; <span class="comment">// 缓存标记未过期</span></span><br><span class="line">        <span class="keyword">return</span> cacheValue;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 缓存标记signKey已过期，异步更新缓存key</span></span><br><span class="line">        THREAD_POOL.execute(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (DistributeLock.lock(key)) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (isExpired(signKey, <span class="keyword">true</span>)) &#123;           <span class="comment">// double-check</span></span><br><span class="line">                        Object cacheValue = GetValueFromDB(); <span class="comment">// 读数据库</span></span><br><span class="line">                        <span class="keyword">if</span> (cacheValue != <span class="keyword">null</span>) &#123;</span><br><span class="line">                            cache.set(key, cacheValue);       <span class="comment">// 设置缓存</span></span><br><span class="line">                            setSign(signKey, expiredTime);    <span class="comment">// 设置缓存标记</span></span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception ex) &#123;</span><br><span class="line">                logger.error(ex.getMessage(), ex);</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                DistributeLock.unlock(key);</span><br><span class="line">            &#125;</span><br><span class="line"> </span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="keyword">return</span> cacheValue;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/posts/454f87ff.html" title="高并发下Redis缓存问题：缓存击穿，缓存穿透，缓存雪崩" target="_blank" rel="external">http://example.com/posts/454f87ff.html</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/luodexin" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/luodexin" target="_blank"><span class="text-dark">Dexin L.</span><small class="ml-1x">Software Developer</small></a></h3>
+        <div>Coding Life</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/posts/6b2c22c8.html" title="Spring源码编译"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/posts/896736b9.html" title="Java消息队列"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/luodexin" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+
+
+
+
+
+</body>
+</html>

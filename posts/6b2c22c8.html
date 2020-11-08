@@ -17,16 +17,22 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>LUO DEXIN Blog</title>
-  <meta property="og:type" content="website">
-<meta property="og:title" content="DexBlog">
-<meta property="og:url" content="http://example.com/index.html">
+  <title>Spring源码编译 | LUO DEXIN Blog</title>
+  <meta name="description" content="Spring Framework 源码源码学习的核心、原则、技巧源码学习核心 IOC非常核心但是也同时非常重要，需要关注容器初始化流程、Bean构建流程、Bean循环依赖、后置处理器 AOP  源码学习原则 找到突破口，从一个点开始  先了解整体流程，再抓住主线分析   源码学习技巧 断点调试 常用分析 快速跳转与搜索  快速编译Spring框架源码获取源码 https:&#x2F;&#x2F;github.com&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring源码编译">
+<meta property="og:url" content="http://example.com/posts/6b2c22c8.html">
 <meta property="og:site_name" content="DexBlog">
+<meta property="og:description" content="Spring Framework 源码源码学习的核心、原则、技巧源码学习核心 IOC非常核心但是也同时非常重要，需要关注容器初始化流程、Bean构建流程、Bean循环依赖、后置处理器 AOP  源码学习原则 找到突破口，从一个点开始  先了解整体流程，再抓住主线分析   源码学习技巧 断点调试 常用分析 快速跳转与搜索  快速编译Spring框架源码获取源码 https:&#x2F;&#x2F;github.com&#x2F;">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-02-07T12:17:59.000Z">
+<meta property="article:modified_time" content="2020-11-07T11:38:57.237Z">
 <meta property="article:author" content="Dexin Luo">
+<meta property="article:tag" content="Spring">
+<meta property="article:tag" content="源码">
 <meta name="twitter:card" content="summary">
   <!-- Canonical links -->
-  <link rel="canonical" href="http://example.com/index.html">
+  <link rel="canonical" href="http://example.com/posts/6b2c22c8.html">
   
     <link rel="alternate" href="/atom.xml" title="DexBlog" type="application/atom+xml">
   
@@ -305,409 +311,234 @@
 </aside>
 
   
-  <main class="main" role="main">
   
-  <div class="content article-list">
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Spring-Framework-%E6%BA%90%E7%A0%81"><span class="toc-number">1.</span> <span class="toc-text">Spring Framework 源码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E6%A0%B8%E5%BF%83%E3%80%81%E5%8E%9F%E5%88%99%E3%80%81%E6%8A%80%E5%B7%A7"><span class="toc-number">1.1.</span> <span class="toc-text">源码学习的核心、原则、技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0%E6%A0%B8%E5%BF%83"><span class="toc-number">1.1.1.</span> <span class="toc-text">源码学习核心</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0%E5%8E%9F%E5%88%99"><span class="toc-number">1.1.2.</span> <span class="toc-text">源码学习原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0%E6%8A%80%E5%B7%A7"><span class="toc-number">1.1.3.</span> <span class="toc-text">源码学习技巧</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E9%80%9F%E7%BC%96%E8%AF%91Spring%E6%A1%86%E6%9E%B6%E6%BA%90%E7%A0%81"><span class="toc-number">1.2.</span> <span class="toc-text">快速编译Spring框架源码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E6%BA%90%E7%A0%81"><span class="toc-number">1.2.1.</span> <span class="toc-text">获取源码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%91Spring-IOC%E5%AE%B9%E5%99%A8%E6%B3%A8%E5%86%8C%E7%BB%84%E4%BB%B6%E7%9A%84%E5%9B%9B%E7%A7%8D%E6%96%B9%E5%BC%8F"><span class="toc-number">1.3.</span> <span class="toc-text">向Spring IOC容器注册组件的四种方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%80-%E5%8C%85%E6%89%AB%E6%8F%8F-%E7%BB%84%E4%BB%B6%E6%A0%87%E6%B3%A8%E6%B3%A8%E8%A7%A3"><span class="toc-number">1.3.1.</span> <span class="toc-text">方式一: 包扫描+组件标注注解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%BA%8C%EF%BC%9A-%E4%BD%BF%E7%94%A8-Bean-%E6%B3%A8%E8%A7%A3"><span class="toc-number">1.3.2.</span> <span class="toc-text">方式二： 使用 @Bean 注解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%89%EF%BC%9A-%E4%BD%BF%E7%94%A8Spring%E6%8F%90%E4%BE%9B%E7%9A%84-FactoryBean"><span class="toc-number">1.3.3.</span> <span class="toc-text">方式三： 使用Spring提供的 FactoryBean</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E5%9B%9B%EF%BC%9A-%E4%BD%BF%E7%94%A8-Import-%E6%B3%A8%E8%A7%A3-%E5%9C%A8-SpringBoot-%E4%B8%AD%E4%BD%BF%E7%94%A8%E8%BE%83%E5%A4%9A"><span class="toc-number">1.3.4.</span> <span class="toc-text">方式四： 使用 @Import 注解(在 SpringBoot 中使用较多)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.4.</span> <span class="toc-text">设计模式</span></a></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-spring-framework/01.source-build" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
     
-      <article class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-  <div class="article-header">
-    
+    <div class="article-header">
+      
+        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/posts/fe06768f.html">Kafka常见面试题</a>
+    <h1 class="article-title" itemprop="name">
+      Spring源码编译
     </h1>
   
 
-  </div>
-  
-  <p class="article-meta">
-    <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/posts/fe06768f.html" class="article-date">
-	  <time datetime="2020-11-01T15:47:21.000Z" itemprop="datePublished">11月 1</time>
-	</a>
-</span>
-    
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/MQ-Kafka/">MQ - Kafka</a>
-  </span>
-
-    
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/Kafka/" rel="tag">Kafka</a>, <a class="article-tag-link-link" href="/tags/MQ/" rel="tag">MQ</a>, <a class="article-tag-link-link" href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag">面试</a>
-  </span>
-
-
-    <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/fe06768f.html#comments" class="article-comment-link">评论</a></span>
-    
-  </p>
-</article>
-
-    
-      <article class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-  <div class="article-header">
-    
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/posts/aca7477a.html">Spring Cloud 微服务网关--Zuul</a>
-    </h1>
-  
-
-  </div>
-  
-  <p class="article-meta">
-    <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/posts/aca7477a.html" class="article-date">
-	  <time datetime="2019-06-07T12:17:59.000Z" itemprop="datePublished">6月 7</time>
-	</a>
-</span>
-    
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/Spring-SpringCloud/">Spring - SpringCloud</a>
-  </span>
-
-    
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/Spring/" rel="tag">Spring</a>, <a class="article-tag-link-link" href="/tags/Zuul/" rel="tag">Zuul</a>
-  </span>
-
-
-    <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/aca7477a.html#comments" class="article-comment-link">评论</a></span>
-    
-  </p>
-</article>
-
-    
-      <article class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-  <div class="article-header">
-    
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/posts/b19a926a.html">Spring AOP 编程</a>
-    </h1>
-  
-
-  </div>
-  
-  <p class="article-meta">
-    <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/posts/b19a926a.html" class="article-date">
-	  <time datetime="2019-03-18T06:12:59.000Z" itemprop="datePublished">3月 18</time>
-	</a>
-</span>
-    
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
-  </span>
-
-    
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/AOP/" rel="tag">AOP</a>, <a class="article-tag-link-link" href="/tags/Spring/" rel="tag">Spring</a>
-  </span>
-
-
-    <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/b19a926a.html#comments" class="article-comment-link">评论</a></span>
-    
-  </p>
-</article>
-
-    
-      <article class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-  <div class="article-header">
-    
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/posts/73f5d5a4.html">Spring IoC 容器初始化流程</a>
-    </h1>
-  
-
-  </div>
-  
-  <p class="article-meta">
-    <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/posts/73f5d5a4.html" class="article-date">
-	  <time datetime="2019-02-08T06:12:59.000Z" itemprop="datePublished">2月 8</time>
-	</a>
-</span>
-    
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
-  </span>
-
-    
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/Spring/" rel="tag">Spring</a>, <a class="article-tag-link-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a>
-  </span>
-
-
-    <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/73f5d5a4.html#comments" class="article-comment-link">评论</a></span>
-    
-  </p>
-</article>
-
-    
-      <article class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-  <div class="article-header">
-    
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/posts/89080a8e.html">Spring Bean的生命周期</a>
-    </h1>
-  
-
-  </div>
-  
-  <p class="article-meta">
-    <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/posts/89080a8e.html" class="article-date">
-	  <time datetime="2019-02-08T06:12:59.000Z" itemprop="datePublished">2月 8</time>
-	</a>
-</span>
-    
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
-  </span>
-
-    
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/Spring/" rel="tag">Spring</a>, <a class="article-tag-link-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a>
-  </span>
-
-
-    <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/89080a8e.html#comments" class="article-comment-link">评论</a></span>
-    
-  </p>
-</article>
-
-    
-      <article class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-  <div class="article-header">
-    
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/posts/6b2c22c8.html">Spring源码编译</a>
-    </h1>
-  
-
-  </div>
-  
-  <p class="article-meta">
-    <span class="article-date">
+      
+      <div class="article-meta">
+        <span class="article-date">
     <i class="icon icon-calendar-check"></i>
 	<a href="/posts/6b2c22c8.html" class="article-date">
-	  <time datetime="2019-02-07T12:17:59.000Z" itemprop="datePublished">2月 7</time>
+	  <time datetime="2019-02-07T12:17:59.000Z" itemprop="datePublished">2019-02-07</time>
 	</a>
 </span>
-    
+        
   <span class="article-category">
     <i class="icon icon-folder"></i>
     <a class="article-category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
   </span>
 
-    
+        
   <span class="article-tag">
     <i class="icon icon-tags"></i>
 	<a class="article-tag-link-link" href="/tags/Spring/" rel="tag">Spring</a>, <a class="article-tag-link-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a>
   </span>
 
 
-    <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/6b2c22c8.html#comments" class="article-comment-link">评论</a></span>
-    
-  </p>
-</article>
+        
 
-    
-      <article class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-  <div class="article-header">
-    
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/posts/454f87ff.html">高并发下Redis缓存问题：缓存击穿，缓存穿透，缓存雪崩</a>
-    </h1>
-  
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/6b2c22c8.html#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h1 id="Spring-Framework-源码"><a href="#Spring-Framework-源码" class="headerlink" title="Spring Framework 源码"></a>Spring Framework 源码</h1><h2 id="源码学习的核心、原则、技巧"><a href="#源码学习的核心、原则、技巧" class="headerlink" title="源码学习的核心、原则、技巧"></a>源码学习的核心、原则、技巧</h2><h3 id="源码学习核心"><a href="#源码学习核心" class="headerlink" title="源码学习核心"></a>源码学习核心</h3><ul>
+<li>IOC<br>非常核心但是也同时非常重要，需要关注<strong>容器初始化流程</strong>、<strong>Bean构建流程</strong>、<strong>Bean循环依赖</strong>、<strong>后置处理器</strong></li>
+<li>AOP</li>
+</ul>
+<h3 id="源码学习原则"><a href="#源码学习原则" class="headerlink" title="源码学习原则"></a>源码学习原则</h3><ul>
+<li><p>找到<strong>突破口</strong>，从一个点开始</p>
+</li>
+<li><p>先了解<strong>整体流程</strong>，再抓住主线分析</p>
+</li>
+</ul>
+<h3 id="源码学习技巧"><a href="#源码学习技巧" class="headerlink" title="源码学习技巧"></a>源码学习技巧</h3><ul>
+<li>断点调试</li>
+<li>常用分析</li>
+<li>快速跳转与搜索</li>
+</ul>
+<h2 id="快速编译Spring框架源码"><a href="#快速编译Spring框架源码" class="headerlink" title="快速编译Spring框架源码"></a>快速编译Spring框架源码</h2><h3 id="获取源码"><a href="#获取源码" class="headerlink" title="获取源码"></a>获取源码</h3><ul>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/spring-projects/spring-framework">https://github.com/spring-projects/spring-framework</a></p>
+</li>
+<li><p>在IDEA中打开源码项目</p>
+<ul>
+<li>需要安装gradle插件</li>
+<li>直接使用IDEA打开项目</li>
+<li>第一次编译很慢，需要下载各种依赖库</li>
+<li>加中文注释需要修改编码问题</li>
+<li>只需要编译部分模块即可 core context beans aop</li>
+</ul>
+</li>
+</ul>
+<h2 id="向Spring-IOC容器注册组件的四种方式"><a href="#向Spring-IOC容器注册组件的四种方式" class="headerlink" title="向Spring IOC容器注册组件的四种方式"></a>向Spring IOC容器注册组件的四种方式</h2><h3 id="方式一-包扫描-组件标注注解"><a href="#方式一-包扫描-组件标注注解" class="headerlink" title="方式一: 包扫描+组件标注注解"></a>方式一: 包扫描+组件标注注解</h3><ul>
+<li>自动扫描： <code>@ComponentScan(&quot;package-name)</code> 或者 基于XML配置的方法<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">context:compoent-scan=&quot;package-name&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li>组件注解： <code>@Component</code> <code>@Service</code> <code>@Controller</code></li>
+</ul>
+<h3 id="方式二：-使用-Bean-注解"><a href="#方式二：-使用-Bean-注解" class="headerlink" title="方式二： 使用 @Bean 注解"></a>方式二： 使用 <code>@Bean</code> 注解</h3><p>通常用于在配置类中注册组件</p>
+<h3 id="方式三：-使用Spring提供的-FactoryBean"><a href="#方式三：-使用Spring提供的-FactoryBean" class="headerlink" title="方式三： 使用Spring提供的 FactoryBean"></a>方式三： 使用Spring提供的 <code>FactoryBean</code></h3><p><code>FactoryBean</code> 是工厂类接口(其自身也是IOC的组件，需要加<code>@Component</code>注解)，用户可以通过实现该接口定制实例化 Bean 的逻辑。 用户实现 Spring 提供的 <code>FactoryBean</code>来实现Bean组件的创建逻辑。</p>
+<h3 id="方式四：-使用-Import-注解-在-SpringBoot-中使用较多"><a href="#方式四：-使用-Import-注解-在-SpringBoot-中使用较多" class="headerlink" title="方式四： 使用 @Import 注解(在 SpringBoot 中使用较多)"></a>方式四： 使用 <code>@Import</code> 注解(在 SpringBoot 中使用较多)</h3><ul>
+<li>@Import(单独类), @Import(类1 ，类2)，批量注册类，手动注册类</li>
+<li>批量注册类：实现 ImportSelect 接口 批量注册</li>
+<li>手动注册类：实现 ImportBeanDefinitionRegistrar</li>
+</ul>
+<h2 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h2><ul>
+<li>策略模式  Resource</li>
+<li>装饰器模式  BeanWrapper</li>
+<li>单例模式</li>
+<li>代理模式 spring的Proxy模式在aop中有体现，比如JdkDynamicAopProxy和Cglib2AopProxy。</li>
+<li>模板方法 </li>
+</ul>
 
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/posts/6b2c22c8.html" title="Spring源码编译" target="_blank" rel="external">http://example.com/posts/6b2c22c8.html</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/luodexin" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/luodexin" target="_blank"><span class="text-dark">Dexin L.</span><small class="ml-1x">Software Developer</small></a></h3>
+        <div>Coding Life</div>
+      </div>
+    </figure>
   </div>
+</div>
+
+
+    </div>
+  </article>
   
-  <p class="article-meta">
-    <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/posts/454f87ff.html" class="article-date">
-	  <time datetime="2018-10-11T06:18:53.000Z" itemprop="datePublished">10月 11</time>
-	</a>
-</span>
     
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/Redis-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">Redis - 常见问题</a>
-  </span>
 
-    
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/Redis/" rel="tag">Redis</a>
-  </span>
-
-
-    <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/454f87ff.html#comments" class="article-comment-link">评论</a></span>
-    
-  </p>
-</article>
-
-    
-      <article class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-  <div class="article-header">
-    
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/posts/896736b9.html">Java消息队列</a>
-    </h1>
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
   
-
-  </div>
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/posts/89080a8e.html" title="Spring Bean的生命周期"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/posts/454f87ff.html" title="高并发下Redis缓存问题：缓存击穿，缓存穿透，缓存雪崩"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
   
-  <p class="article-meta">
-    <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/posts/896736b9.html" class="article-date">
-	  <time datetime="2018-10-11T06:18:53.000Z" itemprop="datePublished">10月 11</time>
-	</a>
-</span>
-    
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/MQ/">MQ</a>
-  </span>
-
-    
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/MQ/" rel="tag">MQ</a>
-  </span>
-
-
-    <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/896736b9.html#comments" class="article-comment-link">评论</a></span>
-    
-  </p>
-</article>
-
-    
-      <article class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-  <div class="article-header">
-    
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/posts/924271fe.html">Kafka 介绍</a>
-    </h1>
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
   
-
-  </div>
   
-  <p class="article-meta">
-    <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/posts/924271fe.html" class="article-date">
-	  <time datetime="2018-10-11T06:18:53.000Z" itemprop="datePublished">10月 11</time>
-	</a>
-</span>
+  <div class="bar-right">
     
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/MQ-Kafka/">MQ - Kafka</a>
-  </span>
-
-    
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/Kafka/" rel="tag">Kafka</a>, <a class="article-tag-link-link" href="/tags/MQ/" rel="tag">MQ</a>
-  </span>
-
-
-    <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/924271fe.html#comments" class="article-comment-link">评论</a></span>
-    
-  </p>
-</article>
-
-    
-      <article class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-  <div class="article-header">
-    
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/posts/63919a0b.html">Redis 并发写数据一致性</a>
-    </h1>
-  
-
-  </div>
-  
-  <p class="article-meta">
-    <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/posts/63919a0b.html" class="article-date">
-	  <time datetime="2018-10-10T01:36:05.000Z" itemprop="datePublished">10月 10</time>
-	</a>
-</span>
-    
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/Redis-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">Redis - 常见问题</a>
-  </span>
-
-    
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/Redis/" rel="tag">Redis</a>
-  </span>
-
-
-    <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/63919a0b.html#comments" class="article-comment-link">评论</a></span>
-    
-  </p>
-</article>
-
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
     
   </div>
-
+  </div>
+</nav>
   
-    
-    <nav class="bar bar-footer clearfix" data-stick-bottom>
-        <div class="bar-inner">
-        <ul class="pager pull-left">
-            
-            <li class="prev disabled">
-                <a href="javascript:;">
-                    <i class="icon icon-angle-left"></i>
-                    上一页
-                </a>
-            </li>
-            
-            
-            <li class="next">
-                <a href="/page/2/">
-                    下一页
-                    <i class="icon icon-angle-right"></i>
-                </a>
-            </li>
-            
-        </ul>
-        <div class="total-article bar-right">Page 1 of 3</div>
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
         </div>
-    </nav>
-    
- 
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 </main>
 
   <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Java 日志系统 | LUO DEXIN Blog</title>
+  <meta name="description" content="1.日志系统背景&#x2F;发展史那就要从Java Log的发展历程开始说起。  log4j（作者Ceki Gülcü）出来时就等到了广泛的应用（注意这里是直接使用），是Java日志事实上的标准，并成为了Apache的项目因此，早年，你工作的时候，在日志里使用了log4j框架来输出，于是你代码是这么写的12345import org.apache.log4j.Logger;\\省略Logger logger">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java 日志系统">
+<meta property="og:url" content="http://example.com/posts/a7321843.html">
+<meta property="og:site_name" content="DexBlog">
+<meta property="og:description" content="1.日志系统背景&#x2F;发展史那就要从Java Log的发展历程开始说起。  log4j（作者Ceki Gülcü）出来时就等到了广泛的应用（注意这里是直接使用），是Java日志事实上的标准，并成为了Apache的项目因此，早年，你工作的时候，在日志里使用了log4j框架来输出，于是你代码是这么写的12345import org.apache.log4j.Logger;\\省略Logger logger">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-32-34.png">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-33-30.png">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-34-08.png">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-34-56.png">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-35-21.png">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-35-42.png">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-36-04.png">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-36-48.png">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-37-22.png">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-37-41.png">
+<meta property="article:published_time" content="2017-12-10T12:17:59.000Z">
+<meta property="article:modified_time" content="2020-11-07T11:54:31.489Z">
+<meta property="article:author" content="Dexin Luo">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="日志">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-32-34.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/posts/a7321843.html">
+  
+    <link rel="alternate" href="/atom.xml" title="DexBlog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/luodexin" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Dexin L.</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Software Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Shenzhen, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/luodexin" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Concurrent/">Java - Concurrent</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Foundation/">Java - Foundation</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-JVM/">Java - JVM</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-NIO/">Java - NIO</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">Linux - 常用命令</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ-Kafka/">MQ - Kafka</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">Redis - 常见问题</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-SpringCloud/">Spring - SpringCloud</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a><span class="category-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AOP/" rel="tag">AOP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MQ/" rel="tag">MQ</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NIO/" rel="tag">NIO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Zuul/" rel="tag">Zuul</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag">多线程</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%97%A5%E5%BF%97/" rel="tag">日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag">面试</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">8</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/MQ-Kafka/">MQ - Kafka</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/fe06768f.html" class="title">Kafka常见面试题</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-11-01T15:47:21.000Z" itemprop="datePublished">2020-11-01</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringCloud/">Spring - SpringCloud</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/aca7477a.html" class="title">Spring Cloud 微服务网关--Zuul</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-06-07T12:17:59.000Z" itemprop="datePublished">2019-06-07</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/b19a926a.html" class="title">Spring AOP 编程</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-03-18T06:12:59.000Z" itemprop="datePublished">2019-03-18</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/73f5d5a4.html" class="title">Spring IoC 容器初始化流程</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-02-08T06:12:59.000Z" itemprop="datePublished">2019-02-08</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/89080a8e.html" class="title">Spring Bean的生命周期</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-02-08T06:12:59.000Z" itemprop="datePublished">2019-02-08</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%E8%83%8C%E6%99%AF-%E5%8F%91%E5%B1%95%E5%8F%B2"><span class="toc-number">1.</span> <span class="toc-text">1.日志系统背景&#x2F;发展史</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%BD%BF%E7%94%A8-Apache-commons-logging-%E6%97%A5%E5%BF%97%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.</span> <span class="toc-text">2.使用 Apache commons-logging 日志接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%BD%BF%E7%94%A8%E6%97%A5%E5%BF%97%E9%97%A8%E9%9D%A2slf4j"><span class="toc-number">3.</span> <span class="toc-text">3.使用日志门面slf4j</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SLF4J%E4%B8%8E%E5%85%B6%E5%AE%83%E6%97%A5%E5%BF%97%E5%AE%9E%E7%8E%B0%E7%BB%84%E4%BB%B6%E7%9A%84%E7%BB%93%E5%90%88%E4%BD%BF%E7%94%A8"><span class="toc-number">3.1.</span> <span class="toc-text">SLF4J与其它日志实现组件的结合使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SLF4J%E4%B8%8E%E5%85%B6%E5%AE%83%E6%97%A5%E5%BF%97%E6%8E%A5%E5%8F%A3%E9%80%82%E9%85%8D"><span class="toc-number">3.2.</span> <span class="toc-text">SLF4J与其它日志接口适配</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#jcl-over-slf4j-jar-%E4%B8%8E-slf4j-jcl-jar"><span class="toc-number">3.2.1.</span> <span class="toc-text">jcl-over-slf4j.jar 与 slf4j-jcl.jar</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%B8%B8%E8%A7%81%E6%A1%88%E4%BE%8B"><span class="toc-number">4.</span> <span class="toc-text">4.常见案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E4%B8%80%EF%BC%9A%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%B8%80%E4%B8%AA%E6%A8%A1%E5%9D%97%E7%94%A8log4j%EF%BC%8C%E5%8F%A6%E4%B8%80%E4%B8%AA%E6%A8%A1%E5%9D%97%E7%94%A8slf4j-log4j2-%E7%BB%9F%E4%B8%80%E8%BE%93%E5%87%BA"><span class="toc-number">4.1.</span> <span class="toc-text">案例一：项目中一个模块用log4j，另一个模块用slf4j+log4j2,统一输出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E4%BA%8C%EF%BC%9A%E5%A6%82%E4%BD%95%E8%AE%A9Spring%E7%BB%9F%E4%B8%80%E6%97%A5%E5%BF%97%E8%BE%93%E5%87%BA"><span class="toc-number">4.2.</span> <span class="toc-text">案例二：如何让Spring统一日志输出</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%82%E9%85%8D%E6%80%9D%E8%B7%AF"><span class="toc-number">4.2.1.</span> <span class="toc-text">适配思路</span></a></li></ol></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-java/03.log-system/logger" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Java 日志系统
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/posts/a7321843.html" class="article-date">
+	  <time datetime="2017-12-10T12:17:59.000Z" itemprop="datePublished">2017-12-10</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/Java-Concurrent/">Java - Concurrent</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Java/" rel="tag">Java</a>, <a class="article-tag-link-link" href="/tags/%E6%97%A5%E5%BF%97/" rel="tag">日志</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/a7321843.html#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="1-日志系统背景-发展史"><a href="#1-日志系统背景-发展史" class="headerlink" title="1.日志系统背景/发展史"></a>1.日志系统背景/发展史</h2><p>那就要从Java Log的发展历程开始说起。</p>
+<ol>
+<li><code>log4j</code>（作者Ceki Gülcü）出来时就等到了广泛的应用（注意这里是直接使用），是Java日志事实上的标准，并成为了Apache的项目<br>因此，早年，你工作的时候，在日志里使用了log4j框架来输出，于是你代码是这么写的<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.log4j.Logger;</span><br><span class="line">\\省略</span><br><span class="line">Logger logger = Logger.getLogger(Test.class);</span><br><span class="line">logger.trace(<span class="string">&quot;trace&quot;</span>);</span><br><span class="line">\\省略</span><br></pre></td></tr></table></figure></li>
+<li>Apache要求把log4j并入到JDK，SUN拒绝，并在jdk1.4版本后增加了<code>JUL</code> （<code>java.util.logging</code>）</li>
+<li>毕竟是JDK自带的，JUL也有很多人用。同时还有其他日志组件，如SimpleLog等。<br>使用JUL，你可能这么来输出系统日志<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.logging.Logger；</span><br><span class="line">\\省略</span><br><span class="line">Logger loggger = Logger.getLogger(Test.class.getName()); </span><br><span class="line">logger.finest(<span class="string">&quot;finest&quot;</span>);</span><br><span class="line">\\省略</span><br></pre></td></tr></table></figure>
+这时如果有人想换成其他日志组件，如log4j换成JUL，因为api完全不同，就需要改动代码。</li>
+<li>Apache见此，开发了<code>JCL</code>（Jakarta Commons Logging），即<code>commons-logging-xx.jar</code>。它只提供一套通用的日志接口api，并不提供日志的实现。很好的设计原则嘛，依赖抽象而非实现。这样应用程序可以在运行时选择自己想要的日志实现组件。</li>
+<li>这样看上去也挺美好的，但是log4j的作者觉得JCL不好用，自己开发出<code>slf4j</code>，它跟JCL类似，本身不替供日志具体实现，只对外提供接口或门面。目的就是为了替代JCL。同时，还开发出<code>logback</code>，一个比log4j拥有更高性能的组件，目的是为了替代log4j。</li>
+<li>Apache参考了logback,并做了一系列优化，推出了<code>log4j2</code></li>
+</ol>
+<h2 id="2-使用-Apache-commons-logging-日志接口"><a href="#2-使用-Apache-commons-logging-日志接口" class="headerlink" title="2.使用 Apache commons-logging 日志接口"></a>2.使用 Apache commons-logging 日志接口</h2><p><code>commons-logging</code> 已经停止更新，最后的状态如下所示：</p>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-32-34.png" alt="logger-2020-10-13-10-32-34"></p>
+<p>JCL默认的配置：如果能找到Log4j 则默认使用log4j 实现，如果没有则使用jul(jdk自带的) 实现，再没有则使用JCL内部提供的SimpleLog 实现。</p>
+<p>至于这个Log具体的实现类，JCL会在ClassLoader中进行查找。这么做，有三个缺点，缺点一是效率较低，二是容易引发混乱，三是在使用了自定义ClassLoader的程序中，使用JCL会引发内存泄露。<br>于是log4j的作者觉得JCL不好用，自己又写了一个新的接口api，那么就是slf4j。</p>
+<h2 id="3-使用日志门面slf4j"><a href="#3-使用日志门面slf4j" class="headerlink" title="3.使用日志门面slf4j"></a>3.使用日志门面slf4j</h2><p>slf4j 的集成图如下图所示</p>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-33-30.png" alt="logger-2020-10-13-10-33-30"></p>
+<p>如图所示，应用调了sl4j-api，即日志门面接口。日志门面接口本身通常并没有实际的日志输出能力，它底层还是需要去调用具体的日志框架API的，也就是实际上它需要跟具体的日志框架结合使用。由于具体日志框架比较多，而且互相也大都不兼容，日志门面接口要想实现与任意日志框架结合可能需要对应的桥接器，上图红框中的组件即是对应的各种桥接器！</p>
+<h3 id="SLF4J与其它日志实现组件的结合使用"><a href="#SLF4J与其它日志实现组件的结合使用" class="headerlink" title="SLF4J与其它日志实现组件的结合使用"></a>SLF4J与其它日志实现组件的结合使用</h3><p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-34-08.png" alt="logger-2020-10-13-10-34-08"></p>
+<p>图的意思为如果你想用slf4j作为日志门面的话，你如何去配合使用其他日志实现组件，这里说明一下（注意jar包名缺少了版本号，在找版本时也要注意版本之间是否兼容）</p>
+<ul>
+<li>slf4j + logback<br><code>slf4j-api.jar</code> + <code>logback-classic.jar</code> + <code>logback-core.jar</code></li>
+<li>slf4j + log4j<br><code>slf4j-api.jar</code> + <code>slf4j-log4j12.jar</code> + <code>log4j.jar</code></li>
+<li>slf4j + jul<br><code>slf4j-api.jar</code> + <code>slf4j-jdk14.jar</code></li>
+<li>也可以只用slf4j无日志实现<br><code>slf4j-api.jar</code> + <code>slf4j-nop.jar</code></li>
+</ul>
+<h3 id="SLF4J与其它日志接口适配"><a href="#SLF4J与其它日志接口适配" class="headerlink" title="SLF4J与其它日志接口适配"></a>SLF4J与其它日志接口适配</h3><p>slf4j支持各种适配，无论你<strong>现在是用哪种日志组件，你都可以通过slf4j的适配器来使用上slf4j</strong>。只要你切换到了slf4j， 那么再通过slf4j用上实现组件，即上面说的。</p>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-34-56.png" alt="logger-2020-10-13-10-34-56"></p>
+<p>其实总的来说，无论就是以下几种情况</p>
+<ul>
+<li>你在用JCL<br>使用<code>jcl-over-slf4j.jar</code>适配</li>
+<li>你在用log4j<br>使用<code>log4j-over-slf4j.jar</code>适配</li>
+<li>你在用JUL<br>使用<code>jul-to-slf4j.jar</code>适配  </li>
+</ul>
+<h4 id="jcl-over-slf4j-jar-与-slf4j-jcl-jar"><a href="#jcl-over-slf4j-jar-与-slf4j-jcl-jar" class="headerlink" title="jcl-over-slf4j.jar 与 slf4j-jcl.jar"></a>jcl-over-slf4j.jar 与 slf4j-jcl.jar</h4><p>当系统是面向commons-logging开发，但是希望使用slf4j来作为日志接口，可以使用<code>jcl-over-slf4j.jar</code>来适配，将commons-logging的日志请求重定向到slf4j。</p>
+<p>当应用面向slf4j开发后，出于某些原因需要切换回commons-logging，slf4j允许你后悔，可以通过<code>slf4j-jcl.jar</code>适配将所有slf4j的日志请求重定向到commons-logging。</p>
+<p><code>icl-over-slf4j.jar</code> 与 <code>slf4j-jcl.jar</code>两者不能同时使用，否则会出现日志委托陷入死循环。</p>
+<h2 id="4-常见案例"><a href="#4-常见案例" class="headerlink" title="4.常见案例"></a>4.常见案例</h2><h3 id="案例一：项目中一个模块用log4j，另一个模块用slf4j-log4j2-统一输出"><a href="#案例一：项目中一个模块用log4j，另一个模块用slf4j-log4j2-统一输出" class="headerlink" title="案例一：项目中一个模块用log4j，另一个模块用slf4j+log4j2,统一输出"></a>案例一：项目中一个模块用log4j，另一个模块用slf4j+log4j2,统一输出</h3><p>其实在某些中小型公司，这种情况很常见。我曾经见过某公司的项目，因为研发不懂底层的日志原理，日志文件里头既有log4j.properties，又有log4j2.xml，各种API混用，惨不忍睹!<br>还有人用着jul的API，然后拿着log4j.properties，跑来问我，为什么配置不生效！简直是一言难尽！<br>OK，回到我们的问题，如何统一输出！OK，这里就要用上slf4j的适配器，slf4j提供了各种各样的适配器，用来将某种日志框架委托给slf4j。其最明显的集成工作方式有如下:</p>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-35-21.png" alt="logger-2020-10-13-10-35-21"></p>
+<p>进行选择填空，将我们的案例里的条件填入,显然应该选log4j-over-slf4j适配器，就变成下面这张图</p>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-35-42.png" alt="logger-2020-10-13-10-35-42"></p>
+<h3 id="案例二：如何让Spring统一日志输出"><a href="#案例二：如何让Spring统一日志输出" class="headerlink" title="案例二：如何让Spring统一日志输出"></a>案例二：如何让Spring统一日志输出</h3><p>统一日志输出的好处就是我们可以统一项目内的各个模块、框架的日志输出（日志格式，日志文件，存放路径等，以及其他slf4j支持的功能）。Spring是用JCL作为日志门面的，当我们的应用是slf4j + log4j，怎么让Spring也用到log4j作为日志输出来实现统一日志输出呢？</p>
+<ul>
+<li>spring默认使用的是jcl输出日志，由于你此时并没有引入Log4j的日志框架，jcl会以jul做为日志框架。此时集成图如下</li>
+</ul>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-36-04.png" alt="logger-2020-10-13-10-36-04"></p>
+<ul>
+<li>而你的应用中，采用了slf4j+log4j-core，即log4j2进行日志记录，那么此时集成图如下</li>
+</ul>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-36-48.png" alt="logger-2020-10-13-10-36-48"></p>
+<h4 id="适配思路"><a href="#适配思路" class="headerlink" title="适配思路"></a>适配思路</h4><ol>
+<li>首先确认需要统一日志的模块、框架是使用哪个日志组件的，然后再找到sfl4j的适配器。</li>
+<li>记得去掉无用的日志实现组件，只保留你要用的。</li>
+</ol>
+<ul>
+<li>方案一</li>
+</ul>
+<p>使用jcl-over-slf4j适配器，将spring内部的commons-logging 桥接到我们的应用到slf4j日志门面，使用我们的应用中的日志系统，去掉spring中的引入的日志组件，此时集成图就变成下面这样了</p>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-37-22.png" alt="logger-2020-10-13-10-37-22"></p>
+<ul>
+<li>方案二</li>
+</ul>
+<p>使用jul-to-slf4j适配器，将spring中的JUL日志组件的日志输出桥接到我们的应用的slf4j日志门面，此时集成图如下所示：</p>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/logger-2020-10-13-10-37-41.png" alt="logger-2020-10-13-10-37-41"></p>
+<p><strong>注意</strong>：这种方案中需要在程序中执行如下代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SLF4JBridgeHandler.removeHandlersForRootLogger();</span><br><span class="line">SLF4JBridgeHandler.install();</span><br></pre></td></tr></table></figure>
+
+
+
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/posts/a7321843.html" title="Java 日志系统" target="_blank" rel="external">http://example.com/posts/a7321843.html</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/luodexin" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/luodexin" target="_blank"><span class="text-dark">Dexin L.</span><small class="ml-1x">Software Developer</small></a></h3>
+        <div>Coding Life</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/posts/94795185.html" title="Java NIO"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/posts/ab5fe11c.html" title="Java线程池二"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/luodexin" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+
+
+
+
+
+</body>
+</html>

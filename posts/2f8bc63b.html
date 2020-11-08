@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Java并发编程-Future | LUO DEXIN Blog</title>
+  <meta name="description" content="1. Future 和 FutureTask1.1 Future 接口Future 接口代表一个异步计算的结果。Future 接口提供了检查计算是否完成、等待计算完成、取回计算结果等方法。 1234567891011121314&#x2F;&#x2F; 取消一个任务，并返回取消结果。参数表示是否中断线程。boolean cancel(boolean mayInterruptInRunning);&#x2F;&#x2F; 判断任务是否被取">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java并发编程-Future">
+<meta property="og:url" content="http://example.com/posts/2f8bc63b.html">
+<meta property="og:site_name" content="DexBlog">
+<meta property="og:description" content="1. Future 和 FutureTask1.1 Future 接口Future 接口代表一个异步计算的结果。Future 接口提供了检查计算是否完成、等待计算完成、取回计算结果等方法。 1234567891011121314&#x2F;&#x2F; 取消一个任务，并返回取消结果。参数表示是否中断线程。boolean cancel(boolean mayInterruptInRunning);&#x2F;&#x2F; 判断任务是否被取">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/03.Concurrent-2020-11-03-08-11-25.png">
+<meta property="article:published_time" content="2017-12-07T12:17:59.000Z">
+<meta property="article:modified_time" content="2020-11-07T11:52:33.784Z">
+<meta property="article:author" content="Dexin Luo">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="多线程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/03.Concurrent-2020-11-03-08-11-25.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/posts/2f8bc63b.html">
+  
+    <link rel="alternate" href="/atom.xml" title="DexBlog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/luodexin" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Dexin L.</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Software Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Shenzhen, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/luodexin" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Concurrent/">Java - Concurrent</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Foundation/">Java - Foundation</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-JVM/">Java - JVM</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-NIO/">Java - NIO</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">Linux - 常用命令</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ-Kafka/">MQ - Kafka</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">Redis - 常见问题</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-SpringCloud/">Spring - SpringCloud</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a><span class="category-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AOP/" rel="tag">AOP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MQ/" rel="tag">MQ</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NIO/" rel="tag">NIO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Zuul/" rel="tag">Zuul</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag">多线程</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%97%A5%E5%BF%97/" rel="tag">日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag">面试</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">8</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/MQ-Kafka/">MQ - Kafka</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/fe06768f.html" class="title">Kafka常见面试题</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-11-01T15:47:21.000Z" itemprop="datePublished">2020-11-01</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringCloud/">Spring - SpringCloud</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/aca7477a.html" class="title">Spring Cloud 微服务网关--Zuul</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-06-07T12:17:59.000Z" itemprop="datePublished">2019-06-07</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/b19a926a.html" class="title">Spring AOP 编程</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-03-18T06:12:59.000Z" itemprop="datePublished">2019-03-18</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/73f5d5a4.html" class="title">Spring IoC 容器初始化流程</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-02-08T06:12:59.000Z" itemprop="datePublished">2019-02-08</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/89080a8e.html" class="title">Spring Bean的生命周期</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-02-08T06:12:59.000Z" itemprop="datePublished">2019-02-08</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Future-%E5%92%8C-FutureTask"><span class="toc-number">1.</span> <span class="toc-text">1. Future 和 FutureTask</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Future-%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 Future 接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-FutureTask-%E7%B1%BB"><span class="toc-number">1.2.</span> <span class="toc-text">1.1 FutureTask 类</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-CountDownLatch"><span class="toc-number">2.</span> <span class="toc-text">2. CountDownLatch</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-CyclicBarrier"><span class="toc-number">3.</span> <span class="toc-text">3. CyclicBarrier</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E4%BD%BF%E7%94%A8-FutureTask-%E4%BC%98%E5%8C%96-RPC-%E8%B0%83%E7%94%A8"><span class="toc-number">4.</span> <span class="toc-text">4. 使用 FutureTask 优化 RPC 调用</span></a></li></ol>
+    </nav>
+  </div>
+</aside>
+
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-java/02.advenced-features/03.Concurrent" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Java并发编程-Future
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/posts/2f8bc63b.html" class="article-date">
+	  <time datetime="2017-12-07T12:17:59.000Z" itemprop="datePublished">2017-12-07</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/Java-Concurrent/">Java - Concurrent</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Java/" rel="tag">Java</a>, <a class="article-tag-link-link" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag">多线程</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/2f8bc63b.html#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="1-Future-和-FutureTask"><a href="#1-Future-和-FutureTask" class="headerlink" title="1. Future 和 FutureTask"></a>1. Future 和 FutureTask</h2><h3 id="1-1-Future-接口"><a href="#1-1-Future-接口" class="headerlink" title="1.1 Future 接口"></a>1.1 Future 接口</h3><p>Future 接口代表一个异步计算的结果。Future 接口提供了检查计算是否完成、等待计算完成、<strong>取回计算结果</strong>等方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 取消一个任务，并返回取消结果。参数表示是否中断线程。</span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">cancel</span><span class="params">(<span class="keyword">boolean</span> mayInterruptInRunning)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 判断任务是否被取消</span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">isCancelled</span><span class="params">()</span></span>; </span><br><span class="line"></span><br><span class="line"><span class="comment">// 判断当前任务是否执行完毕，包括正常执行完毕、执行异常或者任务取消。</span></span><br><span class="line"><span class="function">Boolean <span class="title">isDone</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取任务执行结果，任务结束之前会阻塞。</span></span><br><span class="line"><span class="function">V <span class="title">get</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在指定时间内尝试获取执行结果。若超时则抛出超时异常</span></span><br><span class="line"><span class="function">V <span class="title">get</span><span class="params">(<span class="keyword">long</span> timeout, TimeUnit unit)</span> </span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-1-FutureTask-类"><a href="#1-1-FutureTask-类" class="headerlink" title="1.1 FutureTask 类"></a>1.1 FutureTask 类</h3><p>FutureTask 是 Future 的一个基本实现，它代表了一个<strong>可取消的异步计算</strong>。 它提供了检查计算是否完成、等待计算完成、<strong>取回计算结果</strong>等方法。取回计算结果方法在调用时会阻塞线程，直到计算结束。当一个计算已经完成后，不能重新开始或者取消。</p>
+<p>类继承关系：<br><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/03.Concurrent-2020-11-03-08-11-25.png" alt="03.Concurrent-2020-11-03-08-11-25"></p>
+<p>FutureTask实现了RunnableFuture接口，而RunnableFuture继承了Runnable和Future，也就是说FutureTask既是Runnable，也是Future。</p>
+<ul>
+<li><p>核心属性</p>
+<ul>
+<li><p>volatile int state<br>表示对象状态，volatile关键字保证了内存可见性。futureTask中定义了7种状态，代表了7种不同的执行状态。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> NEW          = <span class="number">0</span>; <span class="comment">//任务新建和执行中</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> COMPLETING   = <span class="number">1</span>; <span class="comment">//任务将要执行完毕</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> NORMAL       = <span class="number">2</span>; <span class="comment">//任务正常执行结束</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> EXCEPTIONAL  = <span class="number">3</span>; <span class="comment">//任务异常</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> CANCELLED    = <span class="number">4</span>; <span class="comment">//任务取消</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> INTERRUPTING = <span class="number">5</span>; <span class="comment">//任务线程即将被中断</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> INTERRUPTED  = <span class="number">6</span>; <span class="comment">//任务线程已中断</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Callable callable：被提交的任务</p>
+</li>
+<li><p>Object outcome：任务执行结果或者任务异常</p>
+</li>
+<li><p>volatile Thread runner：执行任务的线程</p>
+</li>
+<li><p>volatile WaitNode waiters：等待节点，关联等待线程</p>
+</li>
+<li><p>long stateOffset：state字段的内存偏移量</p>
+</li>
+<li><p>long runnerOffset：runner字段的内存偏移量</p>
+</li>
+<li><p>long waitersOffset：waiters字段的内存偏移量</p>
+</li>
+</ul>
+</li>
+<li><p>内部状态转换<br>FutureTask中使用state表示任务状态，state值变更的由CAS操作保证原子性。FutureTask对象初始化时，在构造器中把state设置为NEW，之后状态的变更依据具体执行情况来定。</p>
+<p>例如任务执行正常结束前，state会被设置成COMPLETING，代表任务即将完成，接下来很快就会被设置为NORMAL或者EXCEPTIONAL，这取决于调用Runnable中的call()方法是否抛出了异常。有异常则后者，反之前者。</p>
+<p>任务提交后、任务结束前取消任务，那么有可能变为CANCELLED或者INTERRUPTED。在调用cancel方法时，如果传入false表示不中断线程，state会被置为CANCELLED，反之state先被变为INTERRUPTING，后变为INTERRUPTED。</p>
+<p>FutureTask的状态流转过程，可以出现以下四种情况：</p>
+<ul>
+<li>任务正常执行并返回。 NEW -&gt; COMPLETING -&gt; NORMAL</li>
+<li>执行中出现异常。NEW -&gt; COMPLETING -&gt; EXCEPTIONAL</li>
+<li>任务执行过程中被取消，并且不响应中断。NEW -&gt; CANCELLED</li>
+<li>任务执行过程中被取消，并且响应中断。 NEW -&gt; INTERRUPTING -&gt; INTERRUPTED</li>
+</ul>
+</li>
+<li><p>执行过程</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 校验任务状态  校验当前任务状态是否为NEW以及runner是否已赋值。这一步是防止任务被取消。</span></span><br><span class="line">  <span class="keyword">if</span> (state != NEW ||</span><br><span class="line">      !UNSAFE.compareAndSwapObject(<span class="keyword">this</span>, runnerOffset,</span><br><span class="line">                                    <span class="keyword">null</span>, Thread.currentThread()))</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">      Callable&lt;V&gt; c = callable;</span><br><span class="line">      <span class="keyword">if</span> (c != <span class="keyword">null</span> &amp;&amp; state == NEW) &#123;</span><br><span class="line">          V result;</span><br><span class="line">          <span class="keyword">boolean</span> ran;</span><br><span class="line">          <span class="keyword">try</span> &#123;</span><br><span class="line">              <span class="comment">// 执行业务逻辑，也就是c.call()方法被执行</span></span><br><span class="line">              result = c.call();</span><br><span class="line">              ran = <span class="keyword">true</span>;</span><br><span class="line">          &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">              result = <span class="keyword">null</span>;</span><br><span class="line">              ran = <span class="keyword">false</span>;</span><br><span class="line">              <span class="comment">// 如果业务逻辑异常，则调用setException方法将异常对象赋给outcome，并且更新state值</span></span><br><span class="line">              setException(ex);</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">if</span> (ran)</span><br><span class="line">              <span class="comment">// 如果业务正常，则调用set方法将执行结果赋给outcome，并且更新state值</span></span><br><span class="line">              set(result);</span><br><span class="line">      &#125;</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="comment">// 重置runner</span></span><br><span class="line">      <span class="comment">// runner must be non-null until state is settled to prevent concurrent calls to run()</span></span><br><span class="line">      runner = <span class="keyword">null</span>;</span><br><span class="line">      <span class="comment">// state must be re-read after nulling runner to prevent leaked interrupts</span></span><br><span class="line">      <span class="keyword">int</span> s = state;</span><br><span class="line">      <span class="keyword">if</span> (s &gt;= INTERRUPTING)</span><br><span class="line">          handlePossibleCancellationInterrupt(s);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法经历了以下几步:</p>
+<ul>
+<li>校验当前任务状态是否为NEW以及runner是否已赋值。这一步是防止任务被取消。</li>
+<li>double-check任务状态state</li>
+<li>执行业务逻辑，也就是c.call()方法被执行</li>
+<li>如果业务逻辑异常，则调用setException方法将异常对象赋给outcome，并且更新state值</li>
+<li>如果业务正常，则调用set方法将执行结果赋给outcome，并且更新state值</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-CountDownLatch"><a href="#2-CountDownLatch" class="headerlink" title="2. CountDownLatch"></a>2. CountDownLatch</h2><p>CountDown表示减法计数，Latch表示门闩的意思，计数为0的时候就可以打开门闩了。<br>CountDownLatch 使用时指定一个计数初始值(通常是子线程数量)， 在子线程中执行完时 finnaly 代码中使用 countDownLatch.countDown()。 主线程(或调用线程)中使用 countDownLatch.await() 方法阻塞，等到所有子线程的将 countDownLatch 计数器减为0时继续执行。</p>
+<h2 id="3-CyclicBarrier"><a href="#3-CyclicBarrier" class="headerlink" title="3. CyclicBarrier"></a>3. CyclicBarrier</h2><p>CyclicBarrier 是一个加计数器。它表示一个同步栅栏，当线程执行到 cyclicBarrier.await() 的地方时会阻塞。当加计数器加到指定的数是，所有阻塞线程一起放行。</p>
+<h2 id="4-使用-FutureTask-优化-RPC-调用"><a href="#4-使用-FutureTask-优化-RPC-调用" class="headerlink" title="4. 使用 FutureTask 优化 RPC 调用"></a>4. 使用 FutureTask 优化 RPC 调用</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * service1 和 service2 是两个RPC调用服务</span></span><br><span class="line"><span class="comment">  * 使用 CountDownLatch 协调</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testFutureTask5</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    <span class="comment">/** 创建线程池， 正式环境使用全局的线程池，而且通常自定义的线程池, 拒绝策略改为 CallerRunsPolicy  **/</span></span><br><span class="line">    ExecutorService threadPool = Executors.newFixedThreadPool(<span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 两个 RPC 调用， 创建一个 countDownLatch，初始值是2</span></span><br><span class="line">    CountDownLatch countDownLatch = <span class="keyword">new</span> CountDownLatch(<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">    FutureTask&lt;Integer&gt; task1 = <span class="keyword">new</span> FutureTask&lt;&gt;(<span class="keyword">new</span> Callable&lt;Integer&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Integer <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">            Integer result = <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                result = service1.rpc();</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                countDownLatch.countDown();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    FutureTask&lt;Integer&gt; task2 = <span class="keyword">new</span> FutureTask&lt;&gt;(<span class="keyword">new</span> Callable&lt;Integer&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Integer <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">            Integer result = <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                result = service2.rpc();</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                countDownLatch.countDown();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    threadPool.submit(task1);</span><br><span class="line">    threadPool.submit(task2);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 阻塞调用者线程，等待两个 RPC 调用完成</span></span><br><span class="line">    countDownLatch.await();</span><br><span class="line">    System.out.println(<span class="string">&quot;远程调用完成&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 所有RPC调用完成, 取出调用结果封装接口返回</span></span><br><span class="line">    Integer result1 = <span class="keyword">null</span>, result2 = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        result1 = task1.get();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        result2 = task2.get();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    System.out.println(<span class="string">&quot;所有RPC 调用完成 task1: &quot;</span> + result1 + <span class="string">&quot; task2: &quot;</span> + result2);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 使用 CyclicBarrier 协调线程</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testFutureTask6</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, BrokenBarrierException </span>&#123;</span><br><span class="line">    <span class="comment">/** 创建线程池， 正式环境使用全局的线程池，而且通常自定义的线程池, 拒绝策略改为 CallerRunsPolicy  **/</span></span><br><span class="line">    ExecutorService threadPool = Executors.newFixedThreadPool(<span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 创建一个栅栏，两个 RPC 和 caller 线程， 使用栅栏来同步</span></span><br><span class="line">    CyclicBarrier cyclicBarrier = <span class="keyword">new</span> CyclicBarrier(<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line">    FutureTask&lt;Integer&gt; task1 = <span class="keyword">new</span> FutureTask&lt;&gt;(<span class="keyword">new</span> Callable&lt;Integer&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Integer <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">            Integer result = <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                result = service1.rpc();</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                cyclicBarrier.await();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    FutureTask&lt;Integer&gt; task2 = <span class="keyword">new</span> FutureTask&lt;&gt;(<span class="keyword">new</span> Callable&lt;Integer&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Integer <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">            Integer result = <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                result = service2.rpc();</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                cyclicBarrier.await();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    threadPool.submit(task1);</span><br><span class="line">    threadPool.submit(task2);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 栅栏同步点: call 线程在此等待 RPC 线程到达同步点</span></span><br><span class="line">    cyclicBarrier.await();</span><br><span class="line">    System.out.println(<span class="string">&quot;远程调用完成&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 所有RPC调用完成, 取出调用结果封装接口返回</span></span><br><span class="line">    Integer result1 = <span class="keyword">null</span>, result2 = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        result1 = task1.get();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        result2 = task2.get();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    System.out.println(<span class="string">&quot;所有RPC 调用完成 task1: &quot;</span> + result1 + <span class="string">&quot; task2: &quot;</span> + result2);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/posts/2f8bc63b.html" title="Java并发编程-Future" target="_blank" rel="external">http://example.com/posts/2f8bc63b.html</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/luodexin" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/luodexin" target="_blank"><span class="text-dark">Dexin L.</span><small class="ml-1x">Software Developer</small></a></h3>
+        <div>Coding Life</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/posts/90dfcfb5.html" title="Java线程池一"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/luodexin" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+
+
+
+
+
+</body>
+</html>

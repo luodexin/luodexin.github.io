@@ -17,16 +17,21 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>归档: 2020 | LUO DEXIN Blog</title>
-  <meta property="og:type" content="website">
-<meta property="og:title" content="DexBlog">
-<meta property="og:url" content="http://example.com/archives/2020/index.html">
+  <title>linux awk 命令 | LUO DEXIN Blog</title>
+  <meta name="description" content="1.Introductionawk是行处理器 , 相比较屏幕处理的优点，在处理庞大文件时不会出现内存溢出或是处理缓慢的问题，通常用来格式化文本信息, 处理过程是对每一行进行处理, 然后执行符合条件的命令   2. Usage1awk [-F|-f|-v] ‘BEGIN&amp;#123;&amp;#125; condition1 &amp;#123;command1;&amp;#125; condition2 &amp;#123;com">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux awk 命令">
+<meta property="og:url" content="http://example.com/posts/d79e147e.html">
 <meta property="og:site_name" content="DexBlog">
+<meta property="og:description" content="1.Introductionawk是行处理器 , 相比较屏幕处理的优点，在处理庞大文件时不会出现内存溢出或是处理缓慢的问题，通常用来格式化文本信息, 处理过程是对每一行进行处理, 然后执行符合条件的命令   2. Usage1awk [-F|-f|-v] ‘BEGIN&amp;#123;&amp;#125; condition1 &amp;#123;command1;&amp;#125; condition2 &amp;#123;com">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-12-28T12:23:21.000Z">
+<meta property="article:modified_time" content="2020-11-07T11:53:16.811Z">
 <meta property="article:author" content="Dexin Luo">
+<meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary">
   <!-- Canonical links -->
-  <link rel="canonical" href="http://example.com/archives/2020/index.html">
+  <link rel="canonical" href="http://example.com/posts/d79e147e.html">
   
     <link rel="alternate" href="/atom.xml" title="DexBlog" type="application/atom+xml">
   
@@ -306,49 +311,200 @@
 
   
   
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-number">1.</span> <span class="toc-text">1.Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Usage"><span class="toc-number">2.</span> <span class="toc-text">2. Usage</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Examples"><span class="toc-number">3.</span> <span class="toc-text">3. Examples</span></a></li></ol>
+    </nav>
+  </div>
+</aside>
+
 <main class="main" role="main">
-  	<article class="content article article-archives article-type-list" itemscope="">
-	    <header class="article-header">
-	      <h1 itemprop="title">归档: 2020</h1>
-	      <p class="text-muted">共 1 篇文章</p>
-	    </header>
-	    <div class="article-body">
-	      
+  <div class="content">
+  <article id="post-linux/cmd/awk" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
   
+    <h1 class="article-title" itemprop="name">
+      linux awk 命令
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/posts/d79e147e.html" class="article-date">
+	  <time datetime="2017-12-28T12:23:21.000Z" itemprop="datePublished">2017-12-28</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">Linux - 常用命令</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Linux/" rel="tag">Linux</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/d79e147e.html#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1.Introduction"></a>1.Introduction</h2><p><strong>awk是行处理器</strong> , 相比较屏幕处理的优点，在处理庞大文件时不会出现内存溢出或是处理缓慢的问题，通常用来格式化文本信息, 处理过程是对每一行进行处理, 然后执行符合条件的命令  </p>
+<h2 id="2-Usage"><a href="#2-Usage" class="headerlink" title="2. Usage"></a>2. Usage</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk [-F|-f|-v] ‘BEGIN&#123;&#125; condition1 &#123;command1;&#125; condition2 &#123;command2&#125; END&#123;&#125;’ file</span><br></pre></td></tr></table></figure>
+<p>可选参数:<br>[-F|-f|-v]   -F指定分隔符, 如 -F  “:” , 可以指定多个分割符, 如  -F’[:#/]’   定义三个分隔符<br>-f调用脚本<br>-v定义变量, 如 -v  var=value<br>‘  ‘          引用代码块<br>BEGIN   初始化代码块，在对每一行进行处理之前，初始化代码，主要是引用全局变量，设置FS分隔符 BEGIN {FS=”:”}<br>condition1:  条件1<br>{command1}  命令代码块，包含一条或多条命令, 多条每条以”;”或者换行结束<br>；          多条命令使用分号分隔<br>END      结尾代码块，在对每一行进行处理之后再执行的代码块，主要是进行最终计算或输出结尾摘要信息<br>$0           表示整个当前行<br>$1           每行第一个字段<br><strong>NF</strong>          字段数量变量<br><strong>NR</strong>          每行的记录号，多文件记录递增<br><strong>FNR</strong>        与NR类似，不过多文件记录不递增，每个文件都从1开始<br><strong>FS</strong>          BEGIN时定义分隔符<br><strong>RS</strong>       输入的记录分隔符， 默认为换行符(即文本是按一行一行输入)<br><strong>OFS</strong>      输出字段分隔符， 默认也是空格，可以改为制表符等<br><strong>ORS</strong>        输出的记录分隔符，默认为换行符,即处理结果也是一行一行输出到屏幕  </p>
+<h2 id="3-Examples"><a href="#3-Examples" class="headerlink" title="3. Examples"></a>3. Examples</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#将每一行的前二个字段，分行输出</span></span><br><span class="line">awk -F: <span class="string">&#x27;&#123;print $1; print $2&#125;&#x27;</span> /etc/passwd </span><br><span class="line"><span class="comment">#输出字段1,3,6，以制表符作为分隔符</span></span><br><span class="line">awk -F: <span class="string">&#x27;&#123;print $1,$3,$6&#125;&#x27;</span> OFS=<span class="string">&quot;\t&quot;</span> /etc/passwd </span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#统计行数</span></span><br><span class="line">awk <span class="string">&#x27;BEGIN&#123;X=0&#125; /^$/&#123; X+=1 &#125; END&#123;print &quot;I find&quot;,X,&quot;blank lines.&quot;&#125;&#x27;</span> <span class="built_in">test</span> </span><br><span class="line">I find 4 blank lines.</span><br><span class="line"></span><br><span class="line"><span class="comment">#计算文件夹大小</span></span><br><span class="line">ls -l|awk <span class="string">&#x27;BEGIN&#123;sum=0&#125; !/^d/&#123;sum+=$5&#125; END&#123;print &quot;total size is&quot;,sum&#125;&#x27;</span>  </span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -ef | grep wechat | grep -v grep | awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span>| xargs <span class="built_in">kill</span> -9</span><br></pre></td></tr></table></figure>
+
+<p><strong>匹配</strong><br>//纯字符匹配   !//纯字符不匹配   <del>//字段值匹配    !</del>//字段值不匹配   ~/a1|a2/字段值匹配a1或a2   </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">awk &#x27;/mysql/&#x27; /etc/passwd  </span><br><span class="line">awk &#x27;/mysql/&#123;print &#125;&#x27; /etc/passwd  </span><br><span class="line">awk &#x27;/mysql/&#123;print $0&#125;&#x27; /etc/passwd                   #三条指令结果一样  </span><br><span class="line">awk &#x27;!/mysql/&#123;print $0&#125;&#x27; /etc/passwd                  #输出不匹配mysql的行  </span><br><span class="line">awk &#x27;/mysql|mail/&#123;print&#125;&#x27; /etc/passwd  </span><br><span class="line">awk &#x27;!/mysql|mail/&#123;print&#125;&#x27; /etc/passwd  </span><br><span class="line">awk -F: &#x27;/mail/,/mysql/&#123;print&#125;&#x27; /etc/passwd         //区间匹配  </span><br><span class="line">awk &#x27;/\[2]\[7][7]*/&#123;print $0&#125;&#x27; /etc/passwd               //匹配包含27为数字开头的行，如27，277，2777...  </span><br><span class="line">awk -F: &#x27;$1~/mail/&#123;print $1&#125;&#x27; /etc/passwd           //$1匹配指定内容才显示  </span><br><span class="line">awk -F: &#x27;&#123;if($1~/mail/) print $1&#125;&#x27; /etc/passwd     //与上面相同  </span><br><span class="line">awk -F: &#x27;$1!~/mail/&#123;print $1&#125;&#x27; /etc/passwd          //不匹配  </span><br><span class="line">awk -F: &#x27;$1!~/mail|mysql/&#123;print $1&#125;&#x27; /etc/passwd          </span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/xudong-bupt/p/3721210.html">more Linux awk 命令详解</a></p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/posts/d79e147e.html" title="linux awk 命令" target="_blank" rel="external">http://example.com/posts/d79e147e.html</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/luodexin" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/luodexin" target="_blank"><span class="text-dark">Dexin L.</span><small class="ml-1x">Software Developer</small></a></h3>
+        <div>Coding Life</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
   
     
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
     
-      
-      
-      <section class="panel panel-default b-no">
-        <div class="panel-heading" role="tab">
-          <h3 class="panel-title">
-            <a data-toggle="collapse" href="#collapse2020" aria-expanded="true">
-              <i class="icon icon-calendar-plus text-active"></i><i class="icon icon-calendar-minus text"></i>
-              2020
-            </a>
-            <!-- <a href="/archives/2020" class="archive-year">2020</a> -->
-          </h3>
+    <li class="prev">
+      <a href="/posts/b38f68fb.html" title="JVM垃圾收集器"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/posts/e945cd7.html" title="Linux下权限管理总结"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div id="collapse2020" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading2020">
-        <div class="panel-body">
-          <div class="collection">
-    
-    
-<a href="/posts/fe06768f.html" class="collection-item" target="_blank" itemprop="url">
-  <time datetime="2020-11-01T15:47:21.000Z" itemprop="datePublished">2020-11-01</time>
-  <span>&nbsp;&nbsp;&nbsp;</span> Kafka常见面试题
-</a>
+      </div>
+    </div>
+  </div>
+</div>
 
 
-  
-  
-    </div></div></div></section>
-  
 
-	    </div>
-  	</article>
-  	 	
 </main>
 
   <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
@@ -401,6 +557,10 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 
 
 
+
+
+
+   
 
 
 

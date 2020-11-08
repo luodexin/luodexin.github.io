@@ -17,16 +17,21 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>归档: 2020 | LUO DEXIN Blog</title>
-  <meta property="og:type" content="website">
-<meta property="og:title" content="DexBlog">
-<meta property="og:url" content="http://example.com/archives/2020/index.html">
+  <title>Redis 并发写数据一致性 | LUO DEXIN Blog</title>
+  <meta name="description" content="1. Redis 缓存写一致性解决方案1. 问题背景:在某些业务场景下，可能存在多个连接同时对某一个key的缓存进行写操作，这种操作可能是基于key的旧值进行的。例如有两个线程同时对price进行写操作，同时加10，最终结果我们知道，应该为30才是正确，但是实际上可能出现如下的情况。  问题场景:T1时刻，连接1将price读出，目标设置的数据为10+10 &#x3D; 20。T2时刻，连接2也将数据读出，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis 并发写数据一致性">
+<meta property="og:url" content="http://example.com/posts/63919a0b.html">
 <meta property="og:site_name" content="DexBlog">
+<meta property="og:description" content="1. Redis 缓存写一致性解决方案1. 问题背景:在某些业务场景下，可能存在多个连接同时对某一个key的缓存进行写操作，这种操作可能是基于key的旧值进行的。例如有两个线程同时对price进行写操作，同时加10，最终结果我们知道，应该为30才是正确，但是实际上可能出现如下的情况。  问题场景:T1时刻，连接1将price读出，目标设置的数据为10+10 &#x3D; 20。T2时刻，连接2也将数据读出，">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-10-10T01:36:05.000Z">
+<meta property="article:modified_time" content="2020-11-07T11:38:57.232Z">
 <meta property="article:author" content="Dexin Luo">
+<meta property="article:tag" content="Redis">
 <meta name="twitter:card" content="summary">
   <!-- Canonical links -->
-  <link rel="canonical" href="http://example.com/archives/2020/index.html">
+  <link rel="canonical" href="http://example.com/posts/63919a0b.html">
   
     <link rel="alternate" href="/atom.xml" title="DexBlog" type="application/atom+xml">
   
@@ -306,49 +311,197 @@
 
   
   
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Redis-%E7%BC%93%E5%AD%98%E5%86%99%E4%B8%80%E8%87%B4%E6%80%A7%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">1.</span> <span class="toc-text">1. Redis 缓存写一致性解决方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E9%97%AE%E9%A2%98%E8%83%8C%E6%99%AF"><span class="toc-number">2.</span> <span class="toc-text">1. 问题背景:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%96%B9%E6%A1%88%E4%B8%80-%E7%8B%AC%E5%8D%A0%E9%94%81-%E5%AE%9E%E7%8E%B0%E8%B5%B7%E6%9D%A5%E8%BE%83%E5%A4%8D%E6%9D%82%EF%BC%8C%E6%88%90%E6%9C%AC%E9%AB%98"><span class="toc-number">3.</span> <span class="toc-text">2. 方案一: 独占锁 (实现起来较复杂，成本高)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%96%B9%E6%A1%88%E4%BA%8C-%E4%B9%90%E8%A7%82%E9%94%81"><span class="toc-number">4.</span> <span class="toc-text">3. 方案二: 乐观锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%96%B9%E5%BC%8F%E4%B8%89-%E9%98%9F%E5%88%97"><span class="toc-number">5.</span> <span class="toc-text">4. 方式三: 队列</span></a></li></ol>
+    </nav>
+  </div>
+</aside>
+
 <main class="main" role="main">
-  	<article class="content article article-archives article-type-list" itemscope="">
-	    <header class="article-header">
-	      <h1 itemprop="title">归档: 2020</h1>
-	      <p class="text-muted">共 1 篇文章</p>
-	    </header>
-	    <div class="article-body">
-	      
+  <div class="content">
+  <article id="post-redis/03.Redis并发写的数据安全问题" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
   
+    <h1 class="article-title" itemprop="name">
+      Redis 并发写数据一致性
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/posts/63919a0b.html" class="article-date">
+	  <time datetime="2018-10-10T01:36:05.000Z" itemprop="datePublished">2018-10-10</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/Redis-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">Redis - 常见问题</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Redis/" rel="tag">Redis</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/63919a0b.html#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="1-Redis-缓存写一致性解决方案"><a href="#1-Redis-缓存写一致性解决方案" class="headerlink" title="1. Redis 缓存写一致性解决方案"></a>1. Redis 缓存写一致性解决方案</h2><h2 id="1-问题背景"><a href="#1-问题背景" class="headerlink" title="1. 问题背景:"></a>1. 问题背景:</h2><p>在某些业务场景下，可能存在多个连接同时对某一个key的缓存进行写操作，这种操作可能是基于key的旧值进行的。例如有两个线程同时对<code>price</code>进行写操作，同时加10，最终结果我们知道，应该为30才是正确，但是实际上可能出现如下的情况。</p>
+<blockquote>
+<p>问题场景:<br>T1时刻，连接1将price读出，目标设置的数据为10+10 = 20。<br>T2时刻，连接2也将数据读出，也是为10，目标设置为20。<br>T3时刻，连接1将price设置为20。<br>T4时刻，连接2也将price设置为20，则最终结果是一个错误值20。</p>
+</blockquote>
+<p>这里的场景中使用了一个<code>price</code>的缓存，在这种简单场景下可以使用 Redis 提供的本地方法<code>INCR</code>, <code>INCRBY</code> 等进行操作来避免数据问题。但是有的场景下可能是一个复杂对象中的一个字段，这时 Redis 本地方法就没没有那么好用了，那么就需要将整个数据读取到内存中进行计算，再将计算结果写入Redis中，这是就可能出现上述的问题了。</p>
+<h2 id="2-方案一-独占锁-实现起来较复杂，成本高"><a href="#2-方案一-独占锁-实现起来较复杂，成本高" class="headerlink" title="2. 方案一: 独占锁 (实现起来较复杂，成本高)"></a>2. 方案一: 独占锁 (实现起来较复杂，成本高)</h2><h2 id="3-方案二-乐观锁"><a href="#3-方案二-乐观锁" class="headerlink" title="3. 方案二: 乐观锁"></a>3. 方案二: 乐观锁</h2><p>乐观锁本质上是假设不会进行冲突，使用redis的命令 <strong>watch</strong> 进行构造条件。<br>watch这里表示监控该key值，后面的事务是有条件的执行，如果从watch的exec语句执行时，watch的key对应的value值被修改了，则事务不会执行。</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">watch price</span><br><span class="line"></span><br><span class="line">get price $price</span><br><span class="line"></span><br><span class="line">$price = $price + <span class="number">10</span></span><br><span class="line"></span><br><span class="line">multi</span><br><span class="line"></span><br><span class="line">set price $price</span><br><span class="line"></span><br><span class="line">exec</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-方式三-队列"><a href="#4-方式三-队列" class="headerlink" title="4. 方式三: 队列"></a>4. 方式三: 队列</h2><p>在方案2中，如果同时进行有多个请求进行写操作，例如同一时刻有100个请求过来，那么只会有一个最终成功，其余99个全部会失败，效率不高。而且从业务层面，有些是不可接受的场景。例如：大家同时去抢一个红包，如果背后也是用乐观锁的机制去处理，那每个请求后都只有一个人成功打开红包，这对业务是不可忍受的。</p>
+<p>在这种情况下，如果想让总体效率最大化，可以采用<strong>排队</strong>的机制进行。<br>将所有需要对同一个key的请求进行入队操作，然后用一个<strong>消费者线程</strong>从队头依次读出请求，并对相应的key进行操作。这样对于同一个key的所有请求就都是顺序访问，正常逻辑下则不会有写失败的情况下产生 。从而最大化写逻辑的总体效率。</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/posts/63919a0b.html" title="Redis 并发写数据一致性" target="_blank" rel="external">http://example.com/posts/63919a0b.html</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/luodexin" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/luodexin" target="_blank"><span class="text-dark">Dexin L.</span><small class="ml-1x">Software Developer</small></a></h3>
+        <div>Coding Life</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
   
     
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
     
-      
-      
-      <section class="panel panel-default b-no">
-        <div class="panel-heading" role="tab">
-          <h3 class="panel-title">
-            <a data-toggle="collapse" href="#collapse2020" aria-expanded="true">
-              <i class="icon icon-calendar-plus text-active"></i><i class="icon icon-calendar-minus text"></i>
-              2020
-            </a>
-            <!-- <a href="/archives/2020" class="archive-year">2020</a> -->
-          </h3>
+    <li class="prev">
+      <a href="/posts/924271fe.html" title="Kafka 介绍"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/posts/1ec0f444.html" title="如何保证 Redis 缓存与数据库双写一致性"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div id="collapse2020" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading2020">
-        <div class="panel-body">
-          <div class="collection">
-    
-    
-<a href="/posts/fe06768f.html" class="collection-item" target="_blank" itemprop="url">
-  <time datetime="2020-11-01T15:47:21.000Z" itemprop="datePublished">2020-11-01</time>
-  <span>&nbsp;&nbsp;&nbsp;</span> Kafka常见面试题
-</a>
+      </div>
+    </div>
+  </div>
+</div>
 
 
-  
-  
-    </div></div></div></section>
-  
 
-	    </div>
-  	</article>
-  	 	
 </main>
 
   <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
@@ -401,6 +554,10 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 
 
 
+
+
+
+   
 
 
 
