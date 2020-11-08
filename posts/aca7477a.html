@@ -21,7 +21,7 @@
   <meta name="description" content="1.什么是路由网关网关是系统的唯一的对外入口，介于客户端和服务器端之间的中间层，处理 非业务功能 。 提供路由请求、鉴权、监控、缓存、限流等功能。它将”1对N”问题（一个客户端请求服务器N个服务）转换成了”1对1”问题（一个客户端请求一个网关）。通过服务路由的功能，可以在对外提供服务时，只暴露 网关中配置的调用地址，而调用方就不需要了解后端具体的微服务主机（隐藏后端的实际接口服务，系统更加安全）。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Spring Cloud 微服务网关--Zuul">
-<meta property="og:url" content="http://example.com/posts/aca7477a.html">
+<meta property="og:url" content="http://blog.luodexin.com/posts/aca7477a.html">
 <meta property="og:site_name" content="DexBlog">
 <meta property="og:description" content="1.什么是路由网关网关是系统的唯一的对外入口，介于客户端和服务器端之间的中间层，处理 非业务功能 。 提供路由请求、鉴权、监控、缓存、限流等功能。它将”1对N”问题（一个客户端请求服务器N个服务）转换成了”1对1”问题（一个客户端请求一个网关）。通过服务路由的功能，可以在对外提供服务时，只暴露 网关中配置的调用地址，而调用方就不需要了解后端具体的微服务主机（隐藏后端的实际接口服务，系统更加安全）。">
 <meta property="og:locale" content="zh_CN">
@@ -36,7 +36,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/04.Zuul-2020-11-07-00-45-34.png">
   <!-- Canonical links -->
-  <link rel="canonical" href="http://example.com/posts/aca7477a.html">
+  <link rel="canonical" href="http://blog.luodexin.com/posts/aca7477a.html">
   
     <link rel="alternate" href="/atom.xml" title="DexBlog" type="application/atom+xml">
   
@@ -60,7 +60,7 @@
       
       
       <div class="profile-block text-center">
-        <a id="avatar" href="https://github.com/luodexin" target="_blank">
+        <a id="avatar" href="https://www.luodexin.com" target="_blank">
           <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
         </a>
         <h2 id="name" class="hidden-xs hidden-sm">Dexin L.</h2>
@@ -228,9 +228,19 @@
   <div class="widget">
     <h3 class="widget-title">最新文章</h3>
     <div class="widget-body">
-      <ul class="recent-post-list list-unstyled no-thumbnail">
+      <ul class="recent-post-list list-unstyled ">
         
           <li>
+            
+            <div class="item-thumb">
+              <a href="/posts/fe06768f.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
             
             <div class="item-inner">
               <p class="item-category">
@@ -247,6 +257,16 @@
           
           <li>
             
+            <div class="item-thumb">
+              <a href="/posts/aca7477a.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
+            
             <div class="item-inner">
               <p class="item-category">
                 <a class="category-link" href="/categories/Spring-SpringCloud/">Spring - SpringCloud</a>
@@ -261,6 +281,16 @@
           </li>
           
           <li>
+            
+            <div class="item-thumb">
+              <a href="/posts/b19a926a.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
             
             <div class="item-inner">
               <p class="item-category">
@@ -277,6 +307,16 @@
           
           <li>
             
+            <div class="item-thumb">
+              <a href="/posts/73f5d5a4.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
+            
             <div class="item-inner">
               <p class="item-category">
                 <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
@@ -291,6 +331,16 @@
           </li>
           
           <li>
+            
+            <div class="item-thumb">
+              <a href="/posts/89080a8e.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
             
             <div class="item-inner">
               <p class="item-category">
@@ -428,7 +478,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="http://example.com/posts/aca7477a.html" title="Spring Cloud 微服务网关--Zuul" target="_blank" rel="external">http://example.com/posts/aca7477a.html</a>
+      <a href="http://blog.luodexin.com/posts/aca7477a.html" title="Spring Cloud 微服务网关--Zuul" target="_blank" rel="external">http://blog.luodexin.com/posts/aca7477a.html</a>
     </li>
     
     <li class="post-copyright-license">
@@ -442,12 +492,12 @@
   <div class="panel-body">
     <figure class="media">
       <div class="media-left">
-        <a href="https://github.com/luodexin" target="_blank" class="img-burn thumb-sm visible-lg">
+        <a href="https://www.luodexin.com" target="_blank" class="img-burn thumb-sm visible-lg">
           <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
         </a>
       </div>
       <div class="media-body">
-        <h3 class="media-heading"><a href="https://github.com/luodexin" target="_blank"><span class="text-dark">Dexin L.</span><small class="ml-1x">Software Developer</small></a></h3>
+        <h3 class="media-heading"><a href="https://www.luodexin.com" target="_blank"><span class="text-dark">Dexin L.</span><small class="ml-1x">Software Developer</small></a></h3>
         <div>Coding Life</div>
       </div>
     </figure>

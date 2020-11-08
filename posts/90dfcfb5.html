@@ -21,7 +21,7 @@
   <meta name="description" content="1. Overview1.1 并发工具包(Concurrency utilities)介绍并发工具包提供了：  高性能、灵活的线程池实现 异步任务执行框架 一组为并发访问优化了的集合类 同步工具如计数器、原子变量、锁、条件变量等  1.2 核心类 Interface： Executor: 用于执行提交的任务，将任务的提交与任务的调度执行隔离开 ExecutorService：   Abstract">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Java线程池一">
-<meta property="og:url" content="http://example.com/posts/90dfcfb5.html">
+<meta property="og:url" content="http://blog.luodexin.com/posts/90dfcfb5.html">
 <meta property="og:site_name" content="DexBlog">
 <meta property="og:description" content="1. Overview1.1 并发工具包(Concurrency utilities)介绍并发工具包提供了：  高性能、灵活的线程池实现 异步任务执行框架 一组为并发访问优化了的集合类 同步工具如计数器、原子变量、锁、条件变量等  1.2 核心类 Interface： Executor: 用于执行提交的任务，将任务的提交与任务的调度执行隔离开 ExecutorService：   Abstract">
 <meta property="og:locale" content="zh_CN">
@@ -34,7 +34,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/ExecutorService-2020-11-02-21-07-09.png">
   <!-- Canonical links -->
-  <link rel="canonical" href="http://example.com/posts/90dfcfb5.html">
+  <link rel="canonical" href="http://blog.luodexin.com/posts/90dfcfb5.html">
   
     <link rel="alternate" href="/atom.xml" title="DexBlog" type="application/atom+xml">
   
@@ -58,7 +58,7 @@
       
       
       <div class="profile-block text-center">
-        <a id="avatar" href="https://github.com/luodexin" target="_blank">
+        <a id="avatar" href="https://www.luodexin.com" target="_blank">
           <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
         </a>
         <h2 id="name" class="hidden-xs hidden-sm">Dexin L.</h2>
@@ -226,9 +226,19 @@
   <div class="widget">
     <h3 class="widget-title">最新文章</h3>
     <div class="widget-body">
-      <ul class="recent-post-list list-unstyled no-thumbnail">
+      <ul class="recent-post-list list-unstyled ">
         
           <li>
+            
+            <div class="item-thumb">
+              <a href="/posts/fe06768f.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
             
             <div class="item-inner">
               <p class="item-category">
@@ -245,6 +255,16 @@
           
           <li>
             
+            <div class="item-thumb">
+              <a href="/posts/aca7477a.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
+            
             <div class="item-inner">
               <p class="item-category">
                 <a class="category-link" href="/categories/Spring-SpringCloud/">Spring - SpringCloud</a>
@@ -259,6 +279,16 @@
           </li>
           
           <li>
+            
+            <div class="item-thumb">
+              <a href="/posts/b19a926a.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
             
             <div class="item-inner">
               <p class="item-category">
@@ -275,6 +305,16 @@
           
           <li>
             
+            <div class="item-thumb">
+              <a href="/posts/73f5d5a4.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
+            
             <div class="item-inner">
               <p class="item-category">
                 <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
@@ -289,6 +329,16 @@
           </li>
           
           <li>
+            
+            <div class="item-thumb">
+              <a href="/posts/89080a8e.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
             
             <div class="item-inner">
               <p class="item-category">
@@ -427,7 +477,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="http://example.com/posts/90dfcfb5.html" title="Java线程池一" target="_blank" rel="external">http://example.com/posts/90dfcfb5.html</a>
+      <a href="http://blog.luodexin.com/posts/90dfcfb5.html" title="Java线程池一" target="_blank" rel="external">http://blog.luodexin.com/posts/90dfcfb5.html</a>
     </li>
     
     <li class="post-copyright-license">
@@ -441,12 +491,12 @@
   <div class="panel-body">
     <figure class="media">
       <div class="media-left">
-        <a href="https://github.com/luodexin" target="_blank" class="img-burn thumb-sm visible-lg">
+        <a href="https://www.luodexin.com" target="_blank" class="img-burn thumb-sm visible-lg">
           <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
         </a>
       </div>
       <div class="media-body">
-        <h3 class="media-heading"><a href="https://github.com/luodexin" target="_blank"><span class="text-dark">Dexin L.</span><small class="ml-1x">Software Developer</small></a></h3>
+        <h3 class="media-heading"><a href="https://www.luodexin.com" target="_blank"><span class="text-dark">Dexin L.</span><small class="ml-1x">Software Developer</small></a></h3>
         <div>Coding Life</div>
       </div>
     </figure>
@@ -471,10 +521,6 @@
       <a href="/posts/7d046c4b.html" title="Java Map"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
     </li>
     
-    
-    <li class="next">
-      <a href="/posts/2f8bc63b.html" title="Java并发编程-Future"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
-    </li>
     
     
     <li class="toggle-toc">

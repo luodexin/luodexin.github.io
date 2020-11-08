@@ -21,7 +21,7 @@
   <meta name="description" content="Spring Framework 源码源码学习的核心、原则、技巧源码学习核心 IOC非常核心但是也同时非常重要，需要关注容器初始化流程、Bean构建流程、Bean循环依赖、后置处理器 AOP  源码学习原则 找到突破口，从一个点开始  先了解整体流程，再抓住主线分析   源码学习技巧 断点调试 常用分析 快速跳转与搜索  快速编译Spring框架源码获取源码 https:&#x2F;&#x2F;github.com&#x2F;">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Spring源码编译">
-<meta property="og:url" content="http://example.com/posts/6b2c22c8.html">
+<meta property="og:url" content="http://blog.luodexin.com/posts/6b2c22c8.html">
 <meta property="og:site_name" content="DexBlog">
 <meta property="og:description" content="Spring Framework 源码源码学习的核心、原则、技巧源码学习核心 IOC非常核心但是也同时非常重要，需要关注容器初始化流程、Bean构建流程、Bean循环依赖、后置处理器 AOP  源码学习原则 找到突破口，从一个点开始  先了解整体流程，再抓住主线分析   源码学习技巧 断点调试 常用分析 快速跳转与搜索  快速编译Spring框架源码获取源码 https:&#x2F;&#x2F;github.com&#x2F;">
 <meta property="og:locale" content="zh_CN">
@@ -32,7 +32,7 @@
 <meta property="article:tag" content="源码">
 <meta name="twitter:card" content="summary">
   <!-- Canonical links -->
-  <link rel="canonical" href="http://example.com/posts/6b2c22c8.html">
+  <link rel="canonical" href="http://blog.luodexin.com/posts/6b2c22c8.html">
   
     <link rel="alternate" href="/atom.xml" title="DexBlog" type="application/atom+xml">
   
@@ -56,7 +56,7 @@
       
       
       <div class="profile-block text-center">
-        <a id="avatar" href="https://github.com/luodexin" target="_blank">
+        <a id="avatar" href="https://www.luodexin.com" target="_blank">
           <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
         </a>
         <h2 id="name" class="hidden-xs hidden-sm">Dexin L.</h2>
@@ -224,9 +224,19 @@
   <div class="widget">
     <h3 class="widget-title">最新文章</h3>
     <div class="widget-body">
-      <ul class="recent-post-list list-unstyled no-thumbnail">
+      <ul class="recent-post-list list-unstyled ">
         
           <li>
+            
+            <div class="item-thumb">
+              <a href="/posts/fe06768f.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
             
             <div class="item-inner">
               <p class="item-category">
@@ -243,6 +253,16 @@
           
           <li>
             
+            <div class="item-thumb">
+              <a href="/posts/aca7477a.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
+            
             <div class="item-inner">
               <p class="item-category">
                 <a class="category-link" href="/categories/Spring-SpringCloud/">Spring - SpringCloud</a>
@@ -257,6 +277,16 @@
           </li>
           
           <li>
+            
+            <div class="item-thumb">
+              <a href="/posts/b19a926a.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
             
             <div class="item-inner">
               <p class="item-category">
@@ -273,6 +303,16 @@
           
           <li>
             
+            <div class="item-thumb">
+              <a href="/posts/73f5d5a4.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
+            
             <div class="item-inner">
               <p class="item-category">
                 <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
@@ -287,6 +327,16 @@
           </li>
           
           <li>
+            
+            <div class="item-thumb">
+              <a href="/posts/89080a8e.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
             
             <div class="item-inner">
               <p class="item-category">
@@ -418,7 +468,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="http://example.com/posts/6b2c22c8.html" title="Spring源码编译" target="_blank" rel="external">http://example.com/posts/6b2c22c8.html</a>
+      <a href="http://blog.luodexin.com/posts/6b2c22c8.html" title="Spring源码编译" target="_blank" rel="external">http://blog.luodexin.com/posts/6b2c22c8.html</a>
     </li>
     
     <li class="post-copyright-license">
@@ -432,12 +482,12 @@
   <div class="panel-body">
     <figure class="media">
       <div class="media-left">
-        <a href="https://github.com/luodexin" target="_blank" class="img-burn thumb-sm visible-lg">
+        <a href="https://www.luodexin.com" target="_blank" class="img-burn thumb-sm visible-lg">
           <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
         </a>
       </div>
       <div class="media-body">
-        <h3 class="media-heading"><a href="https://github.com/luodexin" target="_blank"><span class="text-dark">Dexin L.</span><small class="ml-1x">Software Developer</small></a></h3>
+        <h3 class="media-heading"><a href="https://www.luodexin.com" target="_blank"><span class="text-dark">Dexin L.</span><small class="ml-1x">Software Developer</small></a></h3>
         <div>Coding Life</div>
       </div>
     </figure>
