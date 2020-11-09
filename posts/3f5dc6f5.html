@@ -17,24 +17,26 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>LUO DEXIN Blog</title>
-  <meta name="description" content="JVM 类加载机制(一)1. 什么是类加载？在Java开发中，程序员编写的Java源码文件是以.java为后缀的文本文件，源码文件在代码编译后，就会生成JVM（Java虚拟机）能够识别的二进制字节流文件（*.class）。把.class文件中的类描述数据从具体的文件(磁盘文件、网络文件等)加载到内存，并对数据进行校验、转换解析、初始化，使这些数据最终成为可以被JVM直接使用的Java类型，这个过程">
+  <title>JVM 类加载机制(一) | LUO DEXIN Blog</title>
+  <meta name="description" content="1. 什么是类加载？在Java开发中，程序员编写的Java源码文件是以.java为后缀的文本文件，源码文件在代码编译后，就会生成JVM（Java虚拟机）能够识别的二进制字节流文件（*.class）。把.class文件中的类描述数据从具体的文件(磁盘文件、网络文件等)加载到内存，并对数据进行校验、转换解析、初始化，使这些数据最终成为可以被JVM直接使用的Java类型，这个过程叫做JVM的类加载。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="DexBlog">
-<meta property="og:url" content="http://blog.luodexin.com/posts/0.html">
+<meta property="og:title" content="JVM 类加载机制(一)">
+<meta property="og:url" content="http://blog.luodexin.com/posts/3f5dc6f5.html">
 <meta property="og:site_name" content="DexBlog">
-<meta property="og:description" content="JVM 类加载机制(一)1. 什么是类加载？在Java开发中，程序员编写的Java源码文件是以.java为后缀的文本文件，源码文件在代码编译后，就会生成JVM（Java虚拟机）能够识别的二进制字节流文件（*.class）。把.class文件中的类描述数据从具体的文件(磁盘文件、网络文件等)加载到内存，并对数据进行校验、转换解析、初始化，使这些数据最终成为可以被JVM直接使用的Java类型，这个过程">
+<meta property="og:description" content="1. 什么是类加载？在Java开发中，程序员编写的Java源码文件是以.java为后缀的文本文件，源码文件在代码编译后，就会生成JVM（Java虚拟机）能够识别的二进制字节流文件（*.class）。把.class文件中的类描述数据从具体的文件(磁盘文件、网络文件等)加载到内存，并对数据进行校验、转换解析、初始化，使这些数据最终成为可以被JVM直接使用的Java类型，这个过程叫做JVM的类加载。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/07.JVM%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E4%B8%80-2020-11-09-10-47-51.png">
 <meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/07.JVM%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E4%B8%80-2020-11-09-10-54-11.png">
 <meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/07.JVM%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E4%B8%80-2020-11-09-11-49-05.png">
-<meta property="article:published_time" content="2020-11-09T04:02:05.683Z">
-<meta property="article:modified_time" content="2020-11-09T04:02:05.688Z">
+<meta property="article:published_time" content="2018-01-26T10:49:12.000Z">
+<meta property="article:modified_time" content="2020-11-09T04:05:13.040Z">
 <meta property="article:author" content="Dexin Luo">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="JVM">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/07.JVM%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E4%B8%80-2020-11-09-10-47-51.png">
   <!-- Canonical links -->
-  <link rel="canonical" href="http://blog.luodexin.com/posts/0.html">
+  <link rel="canonical" href="http://blog.luodexin.com/posts/3f5dc6f5.html">
   
     <link rel="alternate" href="/atom.xml" title="DexBlog" type="application/atom+xml">
   
@@ -196,7 +198,7 @@
   <div class="widget">
     <h3 class="widget-title">分类</h3>
     <div class="widget-body">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Concurrent/">Java - Concurrent</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Foundation/">Java - Foundation</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-JVM/">Java - JVM</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-NIO/">Java - NIO</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">Linux - 常用命令</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ-Kafka/">MQ - Kafka</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">Redis - 常见问题</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-SpringCloud/">Spring - SpringCloud</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Concurrent/">Java - Concurrent</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-Foundation/">Java - Foundation</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-JVM/">Java - JVM</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java-NIO/">Java - NIO</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">Linux - 常用命令</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ/">MQ</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MQ-Kafka/">MQ - Kafka</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Redis-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">Redis - 常见问题</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-SpringCloud/">Spring - SpringCloud</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -206,7 +208,7 @@
   <div class="widget">
     <h3 class="widget-title">标签</h3>
     <div class="widget-body">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AOP/" rel="tag">AOP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MQ/" rel="tag">MQ</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NIO/" rel="tag">NIO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Zuul/" rel="tag">Zuul</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag">多线程</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%97%A5%E5%BF%97/" rel="tag">日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag">面试</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AOP/" rel="tag">AOP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MQ/" rel="tag">MQ</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NIO/" rel="tag">NIO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Zuul/" rel="tag">Zuul</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag">多线程</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%97%A5%E5%BF%97/" rel="tag">日志</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag">面试</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -216,7 +218,7 @@
   <div class="widget">
     <h3 class="widget-title">归档</h3>
     <div class="widget-body">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">8</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">二月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">8</span></li></ul>
     </div>
   </div>
 
@@ -228,31 +230,6 @@
     <div class="widget-body">
       <ul class="recent-post-list list-unstyled ">
         
-          <li>
-            
-            <div class="item-thumb">
-              <a href="/posts/0.html" class="thumb">
-    
-    
-        <span class="thumb-image thumb-none"></span>
-    
-</a>
-
-            </div>
-            
-            <div class="item-inner">
-              <p class="item-category">
-                
-              </p>
-              <p class="item-title">
-                <a href="/posts/0.html" class="title">(no title)</a>
-              </p>
-              <p class="item-date">
-                <time datetime="2020-11-09T04:02:05.683Z" itemprop="datePublished">2020-11-09</time>
-              </p>
-            </div>
-          </li>
-          
           <li>
             
             <div class="item-thumb">
@@ -353,6 +330,31 @@
             </div>
           </li>
           
+          <li>
+            
+            <div class="item-thumb">
+              <a href="/posts/89080a8e.html" class="thumb">
+    
+    
+        <span class="thumb-image thumb-none"></span>
+    
+</a>
+
+            </div>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
+              </p>
+              <p class="item-title">
+                <a href="/posts/89080a8e.html" class="title">Spring Bean的生命周期</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-02-08T06:12:59.000Z" itemprop="datePublished">2019-02-08</time>
+              </p>
+            </div>
+          </li>
+          
       </ul>
     </div>
   </div>
@@ -364,31 +366,58 @@
 
   
   
+<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    <nav id="toc" class="article-toc">
+      <h3 class="toc-title">文章目录</h3>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AF%E7%B1%BB%E5%8A%A0%E8%BD%BD%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">1. 什么是类加载？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%B1%BB%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">2.</span> <span class="toc-text">2. 类的生命周期</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%8A%A0%E8%BD%BD"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 加载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E9%AA%8C%E8%AF%81"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%87%86%E5%A4%87"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E8%A7%A3%E6%9E%90"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 初始化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%B8%B8%E7%94%A8%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8"><span class="toc-number">3.</span> <span class="toc-text">3. 常用类加载器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%A0%B9%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 根类加载器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%89%A9%E5%B1%95%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 扩展类加载器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%B3%BB%E7%BB%9F%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 系统类加载器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E7%94%A8%E6%88%B7%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 用户自定义类加载器</span></a></li></ol></li></ol>
+    </nav>
+  </div>
+</aside>
+
 <main class="main" role="main">
   <div class="content">
   <article id="post-java/02.advenced-features/07.JVM类加载机制一" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
     
     <div class="article-header">
       
+        
+  
+    <h1 class="article-title" itemprop="name">
+      JVM 类加载机制(一)
+    </h1>
+  
+
+      
       <div class="article-meta">
         <span class="article-date">
     <i class="icon icon-calendar-check"></i>
-	<a href="/posts/0.html" class="article-date">
-	  <time datetime="2020-11-09T04:02:05.683Z" itemprop="datePublished">2020-11-09</time>
+	<a href="/posts/3f5dc6f5.html" class="article-date">
+	  <time datetime="2018-01-26T10:49:12.000Z" itemprop="datePublished">2018-01-26</time>
 	</a>
 </span>
         
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/Java-JVM/">Java - JVM</a>
+  </span>
+
         
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/JVM/" rel="tag">JVM</a>, <a class="article-tag-link-link" href="/tags/Java/" rel="tag">Java</a>
+  </span>
+
 
         
 
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/0.html#comments" class="article-comment-link">评论</a></span>
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/3f5dc6f5.html#comments" class="article-comment-link">评论</a></span>
         
       </div>
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <h1 id="JVM-类加载机制-一"><a href="#JVM-类加载机制-一" class="headerlink" title="JVM 类加载机制(一)"></a>JVM 类加载机制(一)</h1><h2 id="1-什么是类加载？"><a href="#1-什么是类加载？" class="headerlink" title="1. 什么是类加载？"></a>1. 什么是类加载？</h2><p>在Java开发中，程序员编写的Java源码文件是以.java为后缀的文本文件，源码文件在代码编译后，就会生成JVM（Java虚拟机）能够识别的二进制字节流文件（*.class）。把.class文件中的类描述数据从具体的文件(磁盘文件、网络文件等)加载到内存，并对数据进行校验、转换解析、初始化，使这些数据最终成为可以被JVM直接使用的Java类型，这个过程叫做JVM的类加载。</p>
+        <h2 id="1-什么是类加载？"><a href="#1-什么是类加载？" class="headerlink" title="1. 什么是类加载？"></a>1. 什么是类加载？</h2><p>在Java开发中，程序员编写的Java源码文件是以.java为后缀的文本文件，源码文件在代码编译后，就会生成JVM（Java虚拟机）能够识别的二进制字节流文件（*.class）。把.class文件中的类描述数据从具体的文件(磁盘文件、网络文件等)加载到内存，并对数据进行校验、转换解析、初始化，使这些数据最终成为可以被JVM直接使用的Java类型，这个过程叫做JVM的类加载。</p>
 <p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/07.JVM%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E4%B8%80-2020-11-09-10-47-51.png" alt="07.JVM类加载机制一-2020-11-09-10-47-51"></p>
 <p>类加载后类的字节码二进制数据会存储在方法区，并且栈中会创建该类的Class对象，Class对象应用方法去中类的二进制数据。</p>
 <h2 id="2-类的生命周期"><a href="#2-类的生命周期" class="headerlink" title="2. 类的生命周期"></a>2. 类的生命周期</h2><p>从类的生命周期而言，一个类包括如下阶段：</p>
@@ -467,7 +496,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="http://blog.luodexin.com/posts/0.html" title="" target="_blank" rel="external">http://blog.luodexin.com/posts/0.html</a>
+      <a href="http://blog.luodexin.com/posts/3f5dc6f5.html" title="JVM 类加载机制(一)" target="_blank" rel="external">http://blog.luodexin.com/posts/3f5dc6f5.html</a>
     </li>
     
     <li class="post-copyright-license">
@@ -498,12 +527,6 @@
   </article>
   
     
-  <section id="comments">
-  	
-      <div id="vcomments"></div>
-    
-  </section>
-
 
   
 </div>
@@ -513,11 +536,24 @@
   
   <ul class="pager pull-left">
     
-    
-    <li class="next">
-      <a href="/posts/fe06768f.html" title="Kafka常见面试题"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    <li class="prev">
+      <a href="/posts/cfc04602.html" title="CentOS 环境下源码安装Redis"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
     </li>
     
+    
+    <li class="next">
+      <a href="/posts/b38f68fb.html" title="JVM垃圾收集器"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+    <li class="toggle-toc">
+      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
+        <span>[&nbsp;</span><span>文章目录</span>
+        <i class="text-collapsed icon icon-anchor"></i>
+        <i class="text-in icon icon-close"></i>
+        <span>]</span>
+      </a>
+    </li>
     
   </ul>
   
@@ -639,33 +675,6 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
    
 
 
-
-
-   
-    
-  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/valine"></script>
-  <script type="text/javascript">
-  var GUEST = ['nick', 'mail', 'link'];
-  var meta = 'nick,mail,link';
-  meta = meta.split(',').filter(function(item) {
-    return GUEST.indexOf(item) > -1;
-  });
-  new Valine({
-    el: '#vcomments',
-    verify: false,
-    notify: false,
-    appId: '',
-    appKey: '',
-    placeholder: 'Just go go',
-    avatar: 'mm',
-    meta: meta,
-    pageSize: '10' || 10,
-    visitor: false
-  });
-  </script>
-
-     
 
 
 
