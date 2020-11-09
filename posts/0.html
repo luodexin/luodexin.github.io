@@ -17,22 +17,24 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>Spring源码编译 | LUO DEXIN Blog</title>
-  <meta name="description" content="Spring Framework 源码源码学习的核心、原则、技巧源码学习核心 IOC非常核心但是也同时非常重要，需要关注容器初始化流程、Bean构建流程、Bean循环依赖、后置处理器 AOP  源码学习原则 找到突破口，从一个点开始  先了解整体流程，再抓住主线分析   源码学习技巧 断点调试 常用分析 快速跳转与搜索  快速编译Spring框架源码获取源码 https:&#x2F;&#x2F;github.com&#x2F;">
+  <title>LUO DEXIN Blog</title>
+  <meta name="description" content="JVM 类加载机制(一)1. 什么是类加载？在Java开发中，程序员编写的Java源码文件是以.java为后缀的文本文件，源码文件在代码编译后，就会生成JVM（Java虚拟机）能够识别的二进制字节流文件（*.class）。把.class文件中的类描述数据从具体的文件(磁盘文件、网络文件等)加载到内存，并对数据进行校验、转换解析、初始化，使这些数据最终成为可以被JVM直接使用的Java类型，这个过程">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Spring源码编译">
-<meta property="og:url" content="http://blog.luodexin.com/posts/6b2c22c8.html">
+<meta property="og:title" content="DexBlog">
+<meta property="og:url" content="http://blog.luodexin.com/posts/0.html">
 <meta property="og:site_name" content="DexBlog">
-<meta property="og:description" content="Spring Framework 源码源码学习的核心、原则、技巧源码学习核心 IOC非常核心但是也同时非常重要，需要关注容器初始化流程、Bean构建流程、Bean循环依赖、后置处理器 AOP  源码学习原则 找到突破口，从一个点开始  先了解整体流程，再抓住主线分析   源码学习技巧 断点调试 常用分析 快速跳转与搜索  快速编译Spring框架源码获取源码 https:&#x2F;&#x2F;github.com&#x2F;">
+<meta property="og:description" content="JVM 类加载机制(一)1. 什么是类加载？在Java开发中，程序员编写的Java源码文件是以.java为后缀的文本文件，源码文件在代码编译后，就会生成JVM（Java虚拟机）能够识别的二进制字节流文件（*.class）。把.class文件中的类描述数据从具体的文件(磁盘文件、网络文件等)加载到内存，并对数据进行校验、转换解析、初始化，使这些数据最终成为可以被JVM直接使用的Java类型，这个过程">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2019-02-07T12:17:59.000Z">
-<meta property="article:modified_time" content="2020-11-07T11:38:57.237Z">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/07.JVM%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E4%B8%80-2020-11-09-10-47-51.png">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/07.JVM%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E4%B8%80-2020-11-09-10-54-11.png">
+<meta property="og:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/07.JVM%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E4%B8%80-2020-11-09-11-49-05.png">
+<meta property="article:published_time" content="2020-11-09T04:02:05.683Z">
+<meta property="article:modified_time" content="2020-11-09T04:02:05.688Z">
 <meta property="article:author" content="Dexin Luo">
-<meta property="article:tag" content="Spring">
-<meta property="article:tag" content="源码">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/07.JVM%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E4%B8%80-2020-11-09-10-47-51.png">
   <!-- Canonical links -->
-  <link rel="canonical" href="http://blog.luodexin.com/posts/6b2c22c8.html">
+  <link rel="canonical" href="http://blog.luodexin.com/posts/0.html">
   
     <link rel="alternate" href="/atom.xml" title="DexBlog" type="application/atom+xml">
   
@@ -362,102 +364,99 @@
 
   
   
-<aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar">
-  <div class="slimContent">
-    <nav id="toc" class="article-toc">
-      <h3 class="toc-title">文章目录</h3>
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Spring-Framework-%E6%BA%90%E7%A0%81"><span class="toc-number">1.</span> <span class="toc-text">Spring Framework 源码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E6%A0%B8%E5%BF%83%E3%80%81%E5%8E%9F%E5%88%99%E3%80%81%E6%8A%80%E5%B7%A7"><span class="toc-number">1.1.</span> <span class="toc-text">源码学习的核心、原则、技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0%E6%A0%B8%E5%BF%83"><span class="toc-number">1.1.1.</span> <span class="toc-text">源码学习核心</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0%E5%8E%9F%E5%88%99"><span class="toc-number">1.1.2.</span> <span class="toc-text">源码学习原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0%E6%8A%80%E5%B7%A7"><span class="toc-number">1.1.3.</span> <span class="toc-text">源码学习技巧</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E9%80%9F%E7%BC%96%E8%AF%91Spring%E6%A1%86%E6%9E%B6%E6%BA%90%E7%A0%81"><span class="toc-number">1.2.</span> <span class="toc-text">快速编译Spring框架源码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E6%BA%90%E7%A0%81"><span class="toc-number">1.2.1.</span> <span class="toc-text">获取源码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%91Spring-IOC%E5%AE%B9%E5%99%A8%E6%B3%A8%E5%86%8C%E7%BB%84%E4%BB%B6%E7%9A%84%E5%9B%9B%E7%A7%8D%E6%96%B9%E5%BC%8F"><span class="toc-number">1.3.</span> <span class="toc-text">向Spring IOC容器注册组件的四种方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%80-%E5%8C%85%E6%89%AB%E6%8F%8F-%E7%BB%84%E4%BB%B6%E6%A0%87%E6%B3%A8%E6%B3%A8%E8%A7%A3"><span class="toc-number">1.3.1.</span> <span class="toc-text">方式一: 包扫描+组件标注注解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%BA%8C%EF%BC%9A-%E4%BD%BF%E7%94%A8-Bean-%E6%B3%A8%E8%A7%A3"><span class="toc-number">1.3.2.</span> <span class="toc-text">方式二： 使用 @Bean 注解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%89%EF%BC%9A-%E4%BD%BF%E7%94%A8Spring%E6%8F%90%E4%BE%9B%E7%9A%84-FactoryBean"><span class="toc-number">1.3.3.</span> <span class="toc-text">方式三： 使用Spring提供的 FactoryBean</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E5%9B%9B%EF%BC%9A-%E4%BD%BF%E7%94%A8-Import-%E6%B3%A8%E8%A7%A3-%E5%9C%A8-SpringBoot-%E4%B8%AD%E4%BD%BF%E7%94%A8%E8%BE%83%E5%A4%9A"><span class="toc-number">1.3.4.</span> <span class="toc-text">方式四： 使用 @Import 注解(在 SpringBoot 中使用较多)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.4.</span> <span class="toc-text">设计模式</span></a></li></ol></li></ol>
-    </nav>
-  </div>
-</aside>
-
 <main class="main" role="main">
   <div class="content">
-  <article id="post-spring-framework/01.source-build" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+  <article id="post-java/02.advenced-features/07.JVM类加载机制一" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
     
     <div class="article-header">
-      
-        
-  
-    <h1 class="article-title" itemprop="name">
-      Spring源码编译
-    </h1>
-  
-
       
       <div class="article-meta">
         <span class="article-date">
     <i class="icon icon-calendar-check"></i>
-	<a href="/posts/6b2c22c8.html" class="article-date">
-	  <time datetime="2019-02-07T12:17:59.000Z" itemprop="datePublished">2019-02-07</time>
+	<a href="/posts/0.html" class="article-date">
+	  <time datetime="2020-11-09T04:02:05.683Z" itemprop="datePublished">2020-11-09</time>
 	</a>
 </span>
         
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/Spring-SpringFramework/">Spring - SpringFramework</a>
-  </span>
-
         
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/Spring/" rel="tag">Spring</a>, <a class="article-tag-link-link" href="/tags/%E6%BA%90%E7%A0%81/" rel="tag">源码</a>
-  </span>
-
 
         
 
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/6b2c22c8.html#comments" class="article-comment-link">评论</a></span>
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/posts/0.html#comments" class="article-comment-link">评论</a></span>
         
       </div>
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <h1 id="Spring-Framework-源码"><a href="#Spring-Framework-源码" class="headerlink" title="Spring Framework 源码"></a>Spring Framework 源码</h1><h2 id="源码学习的核心、原则、技巧"><a href="#源码学习的核心、原则、技巧" class="headerlink" title="源码学习的核心、原则、技巧"></a>源码学习的核心、原则、技巧</h2><h3 id="源码学习核心"><a href="#源码学习核心" class="headerlink" title="源码学习核心"></a>源码学习核心</h3><ul>
-<li>IOC<br>非常核心但是也同时非常重要，需要关注<strong>容器初始化流程</strong>、<strong>Bean构建流程</strong>、<strong>Bean循环依赖</strong>、<strong>后置处理器</strong></li>
-<li>AOP</li>
-</ul>
-<h3 id="源码学习原则"><a href="#源码学习原则" class="headerlink" title="源码学习原则"></a>源码学习原则</h3><ul>
-<li><p>找到<strong>突破口</strong>，从一个点开始</p>
-</li>
-<li><p>先了解<strong>整体流程</strong>，再抓住主线分析</p>
-</li>
-</ul>
-<h3 id="源码学习技巧"><a href="#源码学习技巧" class="headerlink" title="源码学习技巧"></a>源码学习技巧</h3><ul>
-<li>断点调试</li>
-<li>常用分析</li>
-<li>快速跳转与搜索</li>
-</ul>
-<h2 id="快速编译Spring框架源码"><a href="#快速编译Spring框架源码" class="headerlink" title="快速编译Spring框架源码"></a>快速编译Spring框架源码</h2><h3 id="获取源码"><a href="#获取源码" class="headerlink" title="获取源码"></a>获取源码</h3><ul>
-<li><p><a target="_blank" rel="noopener" href="https://github.com/spring-projects/spring-framework">https://github.com/spring-projects/spring-framework</a></p>
-</li>
-<li><p>在IDEA中打开源码项目</p>
+        <h1 id="JVM-类加载机制-一"><a href="#JVM-类加载机制-一" class="headerlink" title="JVM 类加载机制(一)"></a>JVM 类加载机制(一)</h1><h2 id="1-什么是类加载？"><a href="#1-什么是类加载？" class="headerlink" title="1. 什么是类加载？"></a>1. 什么是类加载？</h2><p>在Java开发中，程序员编写的Java源码文件是以.java为后缀的文本文件，源码文件在代码编译后，就会生成JVM（Java虚拟机）能够识别的二进制字节流文件（*.class）。把.class文件中的类描述数据从具体的文件(磁盘文件、网络文件等)加载到内存，并对数据进行校验、转换解析、初始化，使这些数据最终成为可以被JVM直接使用的Java类型，这个过程叫做JVM的类加载。</p>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/07.JVM%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E4%B8%80-2020-11-09-10-47-51.png" alt="07.JVM类加载机制一-2020-11-09-10-47-51"></p>
+<p>类加载后类的字节码二进制数据会存储在方法区，并且栈中会创建该类的Class对象，Class对象应用方法去中类的二进制数据。</p>
+<h2 id="2-类的生命周期"><a href="#2-类的生命周期" class="headerlink" title="2. 类的生命周期"></a>2. 类的生命周期</h2><p>从类的生命周期而言，一个类包括如下阶段：</p>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/07.JVM%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E4%B8%80-2020-11-09-10-54-11.png" alt="07.JVM类加载机制一"></p>
+<h3 id="2-1-加载"><a href="#2-1-加载" class="headerlink" title="2.1 加载"></a>2.1 加载</h3><p>类的加载阶段，主要是<strong>获取定义此类的二进制字节流</strong>，并将这个字节流所代表的静态存储结构转化为<strong>方法区的运行时数据结构</strong>，最后在Java堆中<strong>生成一个代表这个类的java.lang.Class对象</strong>作为方法区这些数据的访问入口。相对于类加载过程的其他阶段，加载阶段是开发期可控性最强的阶段。我们可以通过定制不通的类加载器，也就是ClassLoader来控制二进制字节流的获取方式。</p>
+<h3 id="2-2-验证"><a href="#2-2-验证" class="headerlink" title="2.2 验证"></a>2.2 验证</h3><p>验证、准备、解析其实都属于连接阶段，而验证就是连接阶段的第一步。这一阶段主要是为了<strong>确保Class文件的字节流中包含的信息复合当前虚拟机的要求，并且不会危害虚拟机自身的安全</strong>。主要验证过程包括：文件格式验证，元数据验证，字节码验证以及符号引用验证。</p>
+<h3 id="2-3-准备"><a href="#2-3-准备" class="headerlink" title="2.3 准备"></a>2.3 准备</h3><p>准备阶段正式<strong>为类变量（static，静态变量）分配内存并设置初始值</strong>。这里的初始值并不是初始化的值，而是数据类型的默认零值。这里提到的类变量是被static修饰的变量，而不是实例变量。关于准备阶段为类变量设置零值的唯一例外就是<strong>当这个类变量同时也被final修饰，那么在编译时，就会直接为这个常量赋上目标值</strong>。</p>
+<h3 id="2-4-解析"><a href="#2-4-解析" class="headerlink" title="2.4 解析"></a>2.4 解析</h3><p>解析时虚拟机<strong>将常量池中的符号引用替换为直接引用</strong>的过程。</p>
+<h3 id="2-5-初始化"><a href="#2-5-初始化" class="headerlink" title="2.5 初始化"></a>2.5 初始化</h3><p>在类加载机制过程中，类初始化是最后一步。在类加载机制过程中，除了加载阶段用户可以通过自定义的类加载器参与，其他阶段都完全由虚拟机主导和控制，直到到了初始化阶段才真正执行Java代码。</p>
+<p>在连接中的准备阶段，静态变量已经赋过一次系统要求的初始值，在初始化阶段，则是根据程序员通过程序的主观计划初始化类变量和其他资源，<strong>类的初始化的主要工作是为静态变量赋程序设定的初始值</strong>。</p>
+<p>Java虚拟机规范中严格规定了有且只有五种情况必须对类进行初始化：</p>
 <ul>
-<li>需要安装gradle插件</li>
-<li>直接使用IDEA打开项目</li>
-<li>第一次编译很慢，需要下载各种依赖库</li>
-<li>加中文注释需要修改编码问题</li>
-<li>只需要编译部分模块即可 core context beans aop</li>
-</ul>
+<li><ol>
+<li>使用new字节码指令创建类的实例，或者使用getstatic、putstatic读取或设置一个静态字段的值（放入常量池中的常量除外），或者调用一个静态方法的时候，对应类必须进行过初始化。</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>通过java.lang.reflect包的方法对类进行反射调用的时候，如果类没有进行过初始化，则要首先进行初始化。</li>
+</ol>
+</li>
+<li><ol start="3">
+<li>当初始化一个类的时候，如果发现其父类没有进行过初始化，则首先触发父类初始化。</li>
+</ol>
+</li>
+<li><ol start="4">
+<li>当虚拟机启动时，用户需要指定一个主类（包含main()方法的类），虚拟机会首先初始化这个类。</li>
+</ol>
+</li>
+<li><ol start="5">
+<li>使用jdk1.7的动态语言支持时，如果一个java.lang.invoke.MethodHandle实例最后的解析结果REF_getStatic、REF_putStatic、RE_invokeStatic的方法句柄，并且这个方法句柄对应的类没有进行初始化，则需要先触发其初始化。</li>
+</ol>
 </li>
 </ul>
-<h2 id="向Spring-IOC容器注册组件的四种方式"><a href="#向Spring-IOC容器注册组件的四种方式" class="headerlink" title="向Spring IOC容器注册组件的四种方式"></a>向Spring IOC容器注册组件的四种方式</h2><h3 id="方式一-包扫描-组件标注注解"><a href="#方式一-包扫描-组件标注注解" class="headerlink" title="方式一: 包扫描+组件标注注解"></a>方式一: 包扫描+组件标注注解</h3><ul>
-<li>自动扫描： <code>@ComponentScan(&quot;package-name)</code> 或者 基于XML配置的方法<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">context:compoent-scan=&quot;package-name&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
-<li>组件注解： <code>@Component</code> <code>@Service</code> <code>@Controller</code></li>
+<p>虚拟机规范使用了“有且只有”这个词描述，这五种情况被称为“<strong>主动引用</strong>”, 除了上面这5种方式，所有引用类的方式都不会触发初始化，称为”<strong>被动引用</strong>“。</p>
+<p>被动引用例子：</p>
+<ul>
+<li><p>例1. 通过子类引用父类的静态字段，不会导致子类初始化；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SuperClass</span> </span>&#123;  </span><br><span class="line">    <span class="comment">//静态变量value  </span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> value = <span class="number">666</span>;  </span><br><span class="line">    <span class="comment">//静态块，父类初始化时会调用  </span></span><br><span class="line">    <span class="keyword">static</span>&#123;  </span><br><span class="line">        System.out.println(<span class="string">&quot;父类初始化！&quot;</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="comment">//子类  </span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SubClass</span> <span class="keyword">extends</span> <span class="title">SuperClass</span></span>&#123;  </span><br><span class="line">    <span class="comment">//静态块，子类初始化时会调用  </span></span><br><span class="line">    <span class="keyword">static</span>&#123;  </span><br><span class="line">        System.out.println(<span class="string">&quot;子类初始化！&quot;</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="comment">//主类、测试类  </span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NotInit</span> </span>&#123;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;  </span><br><span class="line">        System.out.println(SubClass.value);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>例2. 通过数组定义来引用类，不会触发此类的初始化；</p>
+<p>通过数组来引用类，不会触发类的初始化，因为是数组new，而类没有被new，所以没有触发任何“主动引用”条款，属于“被动引用”</p>
+</li>
 </ul>
-<h3 id="方式二：-使用-Bean-注解"><a href="#方式二：-使用-Bean-注解" class="headerlink" title="方式二： 使用 @Bean 注解"></a>方式二： 使用 <code>@Bean</code> 注解</h3><p>通常用于在配置类中注册组件</p>
-<h3 id="方式三：-使用Spring提供的-FactoryBean"><a href="#方式三：-使用Spring提供的-FactoryBean" class="headerlink" title="方式三： 使用Spring提供的 FactoryBean"></a>方式三： 使用Spring提供的 <code>FactoryBean</code></h3><p><code>FactoryBean</code> 是工厂类接口(其自身也是IOC的组件，需要加<code>@Component</code>注解)，用户可以通过实现该接口定制实例化 Bean 的逻辑。 用户实现 Spring 提供的 <code>FactoryBean</code>来实现Bean组件的创建逻辑。</p>
-<h3 id="方式四：-使用-Import-注解-在-SpringBoot-中使用较多"><a href="#方式四：-使用-Import-注解-在-SpringBoot-中使用较多" class="headerlink" title="方式四： 使用 @Import 注解(在 SpringBoot 中使用较多)"></a>方式四： 使用 <code>@Import</code> 注解(在 SpringBoot 中使用较多)</h3><ul>
-<li>@Import(单独类), @Import(类1 ，类2)，批量注册类，手动注册类</li>
-<li>批量注册类：实现 ImportSelect 接口 批量注册</li>
-<li>手动注册类：实现 ImportBeanDefinitionRegistrar</li>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//父类  </span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SuperClass</span> </span>&#123;  </span><br><span class="line">    <span class="comment">//静态变量value  </span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> value = <span class="number">666</span>;  </span><br><span class="line">    <span class="comment">//静态块，父类初始化时会调用  </span></span><br><span class="line">    <span class="keyword">static</span>&#123;  </span><br><span class="line">        System.out.println(<span class="string">&quot;父类初始化！&quot;</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="comment">//主类、测试类  </span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NotInit</span> </span>&#123;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;  </span><br><span class="line">        <span class="comment">// 不会导致SuperClass类初始化</span></span><br><span class="line">        SuperClass[] test = <span class="keyword">new</span> SuperClass[<span class="number">10</span>];  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>例3. 引用类的静态常量不会触发定义常量的类的初始化，因为常量在编译阶段已经被放到常量池中了。</p>
+<p>在NotInit类中引用ConstClass的常量，并不会导致ConstClass的初始化</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//常量类  </span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConstClass</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">static</span>&#123;  </span><br><span class="line">        System.out.println(<span class="string">&quot;常量类初始化！&quot;</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">      </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String HELLOWORLD = <span class="string">&quot;hello world!&quot;</span>;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="comment">//主类、测试类  </span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NotInit</span> </span>&#123;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;  </span><br><span class="line">        System.out.println(ConstClass.HELLOWORLD);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+
+</li>
 </ul>
-<h2 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h2><ul>
-<li>策略模式  Resource</li>
-<li>装饰器模式  BeanWrapper</li>
-<li>单例模式</li>
-<li>代理模式 spring的Proxy模式在aop中有体现，比如JdkDynamicAopProxy和Cglib2AopProxy。</li>
-<li>模板方法 </li>
+<h2 id="3-常用类加载器"><a href="#3-常用类加载器" class="headerlink" title="3. 常用类加载器"></a>3. 常用类加载器</h2><p>Java中类加载器包含两大类，一类是JVM内置的类加载器，一类是用户自定义的类加载器。JVM内置类加载器包含三个: 根类加载器、扩展类加载器、系统类加载器； 用户自定义类加载器由用户自定义，定义用户类加载器是需要扩展 <code>ClassLoader</code> 类。</p>
+<h3 id="3-1-根类加载器"><a href="#3-1-根类加载器" class="headerlink" title="3.1 根类加载器"></a>3.1 根类加载器</h3><p>根类加载器又称为引导类加载器(bootstrap class loader)、启动类加载器，是用C++语言编写。根类加载器主要负载加载classpath指定的核心类库(<code>JAVA_HOME\jre\lib</code>)或者<code>sun.boot.class.path</code>指定路径下的核心类库，出于安全考虑，根类加载器只加载java, javax, sun 开头的类。根类加载器无法被应用程序直接使用，在程序中尝试获取根类加载器会返回null。</p>
+<h3 id="3-2-扩展类加载器"><a href="#3-2-扩展类加载器" class="headerlink" title="3.2 扩展类加载器"></a>3.2 扩展类加载器</h3><p>扩展类加载器ExtensionClassLoader是用JAVA编写，且它的父类加载器是Bootstrap。扩展类加载器的全类名是<code>sun.misc.Launcher$ExtClassLoader</code>（在JDK9中为PlatformClassLoader）。</p>
+<p>扩展类加载器负责加载<code>JAVA_HOME/jre/lib/ext</code>目录中的类库或<code>java.ext.dirs</code>指定目录的类库</p>
+<h3 id="3-3-系统类加载器"><a href="#3-3-系统类加载器" class="headerlink" title="3.3 系统类加载器"></a>3.3 系统类加载器</h3><p>系统类加载器也称为应用类加载器(AppClassLoader)，是由Java实现，全类名是<code>sun.misc.Launcher$AppClassLoader</code>, 它的父类是扩展类加载器。<br>系统类加载器负责从<code>classpath</code>环境变量或者<code>java.class.path</code>指定的目录加载类，是用户自定义类加载器的默认父类加载器。</p>
+<p><img src="http://bucket-img01.oss-cn-shenzhen.aliyuncs.com/cs-note/07.JVM%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6%E4%B8%80-2020-11-09-11-49-05.png" alt="07.JVM类加载机制一-2020-11-09-11-49-05"></p>
+<h3 id="3-4-用户自定义类加载器"><a href="#3-4-用户自定义类加载器" class="headerlink" title="3.4 用户自定义类加载器"></a>3.4 用户自定义类加载器</h3><p>用户自定义类加载器需要继承<code>java.lang.ClassLoader</code>类，在该类中有四个核心方法：</p>
+<ul>
+<li><p>loadClass：<br>双亲委派实现代码，用户自定义类加载器一般不覆盖本方法，方法返回Class</p>
+</li>
+<li><p>findClass：<br>本类加载器加载，用户自定义类加载器应该重写的方法，本方法配合 <code>defineClass</code> 方法使用，得到 Class 对象</p>
+</li>
+<li><p>defineClass：<br>将字节码解析为JVM能识别的Class对象</p>
+</li>
+<li><p>resolveClass：<br>用来连接类</p>
+</li>
 </ul>
 
       
@@ -468,7 +467,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="http://blog.luodexin.com/posts/6b2c22c8.html" title="Spring源码编译" target="_blank" rel="external">http://blog.luodexin.com/posts/6b2c22c8.html</a>
+      <a href="http://blog.luodexin.com/posts/0.html" title="" target="_blank" rel="external">http://blog.luodexin.com/posts/0.html</a>
     </li>
     
     <li class="post-copyright-license">
@@ -499,6 +498,12 @@
   </article>
   
     
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
 
   
 </div>
@@ -508,24 +513,11 @@
   
   <ul class="pager pull-left">
     
-    <li class="prev">
-      <a href="/posts/89080a8e.html" title="Spring Bean的生命周期"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
-    </li>
-    
     
     <li class="next">
-      <a href="/posts/454f87ff.html" title="高并发下Redis缓存问题：缓存击穿，缓存穿透，缓存雪崩"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+      <a href="/posts/fe06768f.html" title="Kafka常见面试题"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
     </li>
     
-    
-    <li class="toggle-toc">
-      <a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button">
-        <span>[&nbsp;</span><span>文章目录</span>
-        <i class="text-collapsed icon icon-anchor"></i>
-        <i class="text-in icon icon-close"></i>
-        <span>]</span>
-      </a>
-    </li>
     
   </ul>
   
@@ -647,6 +639,33 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
    
 
 
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: '',
+    appKey: '',
+    placeholder: 'Just go go',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
 
 
 
